@@ -47,13 +47,13 @@
   /* 공통 */
   .hidden { display: none !important; }
   .btn {
-    display: inline-flex; align-items: center; gap: 6px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     padding: 10px 20px; border-radius: var(--radius-sm);
     font-size: 14px; font-weight: 600; cursor: pointer;
     border: none; transition: all 0.2s; font-family: inherit;
     text-decoration: none;
   }
-  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary { background: var(--primary); color: #fff; text-align: center; justify-content: center; }
   .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
   .btn-secondary { background: var(--surface); color: var(--text-primary); border: 1.5px solid var(--border); }
   .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
