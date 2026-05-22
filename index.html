@@ -1685,14 +1685,17 @@ function listenMessages() {
     : query(collection(db, 'messages'), where('studentId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
 
   const knownIds = new Set();
+  // onSnapshot 첫 콜백은 항상 기존 전체를 줌 → isFirstCall로 구분
+  // 단, 첫 콜백 처리를 완전히 동기적으로 끝낸 뒤 두 번째부터 팝업
+  let callCount = 0;
 
-  // getDocs로 현재 메시지 ID를 먼저 모두 가져온 뒤 리스너 시작
-  getDocs(q).then(initSnap => {
-    initSnap.docs.forEach(d => knownIds.add(d.id));
-    console.log('[리스너] 초기화 완료, 기존 메시지 수:', knownIds.size);
-
-    unsubMessages = onSnapshot(q, snap => {
-      // 새로 추가된 메시지 감지
+  unsubMessages = onSnapshot(q, snap => {
+    callCount++;
+    if (callCount === 1) {
+      // 첫 번째 콜백: 현재 존재하는 모든 ID 기록 (팝업 없음)
+      snap.docs.forEach(d => knownIds.add(d.id));
+    } else {
+      // 두 번째 이후: knownIds에 없는 새 문서만 팝업
       snap.docChanges().forEach(change => {
         if (change.type === 'added' && !knownIds.has(change.doc.id)) {
           knownIds.add(change.doc.id);
@@ -1700,25 +1703,20 @@ function listenMessages() {
           const isForMe = currentUser.role === 'teacher'
             ? m.senderRole === 'student'
             : m.senderRole === 'teacher';
-          if (isForMe) {
-            console.log('[리스너] 새 메시지 → 팝업 표시!');
-            showMsgPopup();
-          }
+          if (isForMe) showMsgPopup();
         }
       });
+    }
 
-      messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      updateMsgBadge();
+    messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    updateMsgBadge();
 
-      const msgPage = document.getElementById('page-messages');
-      if (msgPage && !msgPage.classList.contains('hidden')) {
-        renderMessages();
-      }
-    }, err => {
-      console.error('쪽지 리스너 오류:', err);
-    });
-  }).catch(err => {
-    console.error('초기 메시지 로드 오류:', err);
+    const msgPage = document.getElementById('page-messages');
+    if (msgPage && !msgPage.classList.contains('hidden')) {
+      renderMessages();
+    }
+  }, err => {
+    console.error('쪽지 리스너 오류:', err);
   });
 }
 
