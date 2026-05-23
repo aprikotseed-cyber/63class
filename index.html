@@ -825,14 +825,12 @@
 
   /* 칭호 박스 반짝임 테두리 (미소유) */
   @keyframes borderGlow {
-    0%   { border-color: #b45309; }
-    33%  { border-color: #f59e0b; }
-    66%  { border-color: #fcd34d; }
-    100% { border-color: #b45309; }
+    0%   { box-shadow: 0 0 0 0 rgba(99,102,241,0); border-color: var(--border); }
+    50%  { box-shadow: 0 0 5px 3px rgba(99,102,241,0.35); border-color: #f59e0b; }
+    100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); border-color: var(--border); }
   }
   .title-card-unowned {
-    border-width: 2px;
-    animation: borderGlow 2s linear infinite;
+    animation: borderGlow 3s ease-in-out infinite;
   }
   /* 소유한 칭호 - 흑백 필터 */
   .title-card-owned {
