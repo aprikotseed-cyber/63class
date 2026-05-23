@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍀</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>우리반 홈페이지</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -681,15 +682,15 @@
 
   /* 사이드바 간판 */
   .sidebar-banner {
-    padding: 16px 12px 12px;
+    padding: 16px 12px 30px;
     text-align: center;
     border-bottom: 1px solid var(--border);
     margin-bottom: 8px;
   }
   .sidebar-banner-logo { font-size: 28px; line-height: 1; margin-bottom: 4px; }
-  .sidebar-banner-title { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; word-break: keep-all; }
-  .sidebar-banner-days { font-size: 10px; color: var(--text-secondary); margin-bottom: 2px; }
-  .sidebar-banner-points { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .sidebar-banner-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; word-break: keep-all; }
+  .sidebar-banner-days { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+  .sidebar-banner-points { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
   .sidebar-banner-btn {
     width: calc(100% - 20px);
     margin: 0 auto;
@@ -700,8 +701,8 @@
   }
   .sidebar-banner-btn.student { background: var(--primary); color: #fff; }
   .sidebar-banner-btn.student:hover { background: var(--primary-dark); }
-  .sidebar-banner-btn.teacher { background: var(--success-light); color: #15803D; border: 1.5px solid var(--success); }
-  .sidebar-banner-btn.teacher:hover { background: var(--success); color: #fff; }
+  .sidebar-banner-btn.teacher { background: var(--primary); color: #fff; }
+  .sidebar-banner-btn.teacher:hover { background: var(--primary-dark); color: #fff; }
   .sidebar-attend-done { background: var(--bg) !important; color: var(--text-muted) !important; cursor: default !important; border: 1.5px solid var(--border) !important; }
   .sidebar-attend-done:hover { background: var(--bg) !important; color: var(--text-muted) !important; }
 
@@ -898,7 +899,7 @@
           <div class="sidebar-banner-title" id="teacherSidebarTitle">우리반 홈페이지</div>
           <div class="sidebar-banner-days" id="teacherSidebarDays">-</div>
           <div class="sidebar-banner-points" id="teacherSidebarPoints">-</div>
-          <button class="sidebar-banner-btn teacher" onclick="openAttendanceModal()">📋 출석 현황</button>
+          <button class="sidebar-banner-btn teacher" onclick="openAttendanceModal()">출석 현황</button>
         </div>
         <div class="sidebar-section">
           <button class="sidebar-item" data-page="teacherHome" onclick="navigate('teacherHome')">
@@ -956,7 +957,7 @@
           <div class="sidebar-banner-title" id="studentSidebarTitle">우리반 홈페이지</div>
           <div class="sidebar-banner-days" id="studentSidebarDays">-</div>
           <div class="sidebar-banner-points" id="studentSidebarPoints">-</div>
-          <button class="sidebar-banner-btn student" id="sidebarAttendBtn" onclick="openAttendCheck()">✋ 출석 체크</button>
+          <button class="sidebar-banner-btn student" id="sidebarAttendBtn" onclick="openAttendCheck()">출석 체크</button>
         </div>
         <div class="sidebar-section">
           <button class="sidebar-item" data-page="studentHome" onclick="navigate('studentHome')">
@@ -998,9 +999,9 @@
       <section id="page-teacherHome" class="hidden">
         <!-- 공지사항 박스 -->
         <div class="notice-box" id="teacherNoticeBox">
-          <div class="notice-avatar" id="teacherNoticeAvatar">👩‍🏫</div>
+          <div class="notice-avatar" id="teacherNoticeAvatar">🔊</div>
           <div class="notice-content" id="teacherNoticeContent">
-            <span class="notice-empty">공지사항을 작성해보세요</span>
+            <span class="notice-empty">공지사항을 작성해 보세요</span>
           </div>
           <div class="notice-actions">
             <button class="btn btn-secondary btn-sm" onclick="openNoticeModal()" title="공지 수정">✏️</button>
@@ -1392,7 +1393,7 @@
           <tr>
             <th style="width:50px;">번호</th>
             <th style="width:80px;">이름</th>
-            <th style="width:80px;">출석</th>
+            <th style="width:100px;">출석</th>
             <th>한 마디</th>
           </tr>
         </thead>
@@ -2160,7 +2161,11 @@ function renderDashboard() {
     <div class="stat-card"><div class="stat-icon" style="background:#F0FDF4;">💌</div><div class="stat-label">안 읽은 쪽지</div><div class="stat-value">${unread}개</div></div>
   `;
   // 리더보드 - 공동순위 반영
-  const sorted = [...students].sort((a,b) => (b.points||0)-(a.points||0)).slice(0, 8);
+  const sorted = [...students].sort((a,b) => {
+  const pd = (b.points||0) - (a.points||0);
+  if (pd !== 0) return pd;
+  return (a.number||999) - (b.number||999);
+}).slice(0, 8);
   const lbRanks = [];
   let lbCurRank = 1;
   for (let i = 0; i < sorted.length; i++) {
