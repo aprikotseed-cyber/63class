@@ -831,6 +831,10 @@
             <span class="sidebar-icon">🎁</span>
             <span class="menu-text">보상 관리</span>
           </button>
+         <button class="sidebar-item" data-page="decorManage" onclick="navigate('decorManage')">
+  <span class="sidebar-icon">🎨</span>
+  <span class="menu-text">꾸미기 관리</span>
+</button>
           <button class="sidebar-item" data-page="exchanges" onclick="navigate('exchanges')">
             <span class="sidebar-icon">🔄</span>
             <span class="menu-text">교환 신청</span>
@@ -971,6 +975,21 @@
         <div class="student-grid" id="pointStudentGrid"></div>
       </section>
 
+     <!-- ===== 교사: 꾸미기 관리 ===== -->
+<section id="page-decorManage" class="hidden">
+  <div class="section-header">
+    <div>
+      <div class="section-title">🎨 꾸미기 상점 관리</div>
+      <div class="section-subtitle">학생 프로필 꾸미기 아이템을 관리해요</div>
+    </div>
+  </div>
+  <div class="empty-state" style="padding:80px 20px;">
+    <div class="empty-icon">🚧</div>
+    <h3>준비 중이에요!</h3>
+    <p>칭호, 캐릭터 꾸미기 아이템 등<br>다양한 기능이 추가될 예정이에요 😊</p>
+  </div>
+</section>
+     
       <!-- ===== 교사: 보상 관리 ===== -->
       <section id="page-rewards" class="hidden">
         <div class="section-header">
@@ -1836,6 +1855,7 @@ window.navigate = async function(page) {
   if (page === 'studentHome') renderStudentHome();
   if (page === 'studentSettings') renderStudentSettings();
   if (page === 'decorShop') {} // 꾸미기 상점 (추후 기능 추가)
+  if (page === 'decorManage') {}
   if (page === 'settings') {
     const title = document.getElementById('navTitle').textContent;
     const logo = document.getElementById('navLogo').textContent;
