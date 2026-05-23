@@ -2722,7 +2722,8 @@ window.switchCardTab = function(type, btn) {
 
 async function loadSubTabs(type) {
   const snap = await getDocs(query(collection(db, 'cardSubTabs'), where('type','==',type)));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
 }
 
 async function updateCardSubTabs(type) {
