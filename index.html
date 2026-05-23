@@ -601,6 +601,7 @@
   .sidebar-banner-points { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
   .sidebar-banner-btn {
     width: calc(100% - 24px); padding: 7px 8px; border-radius: var(--radius-sm);
+    margin: 0 auto;
     font-size: 11px; font-weight: 700; cursor: pointer;
     border: none; font-family: inherit; transition: all 0.2s;
     display: flex; align-items: center; justify-content: center; gap: 4px;
@@ -2717,7 +2718,7 @@ async function updateAttendBtn() {
     btn.classList.add('sidebar-attend-done');
     btn.onclick = null;
   } else {
-    btn.textContent = '✋ 출석 체크';
+    btn.textContent = '출석 체크';
     btn.classList.remove('sidebar-attend-done');
     btn.onclick = openAttendCheck;
   }
