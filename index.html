@@ -4981,6 +4981,7 @@ window.doExchange = async function() {
     showToast('교환 신청을 보냈어요! 선생님 승인을 기다려주세요 🎁');
     // 보상 상점 실시간 갱신 (포인트 반영)
     await reloadStudents();
+    loadBanner(false);
     renderRewardShop();
   } catch(e) { showToast('오류: ' + e.message); }
 };
