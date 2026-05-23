@@ -393,7 +393,7 @@
   }
   .message-compose textarea {
     flex: 1; resize: none; border-radius: var(--radius-md);
-    min-height: 36px; max-height: 36px;
+    min-height: 44px; max-height: 120px;
   }
 
   /* =============== 보상 =============== */
@@ -1819,7 +1819,11 @@ function renderDashboard() {
     <div class="stat-card"><div class="stat-icon" style="background:#F0FDF4;">💌</div><div class="stat-label">안 읽은 쪽지</div><div class="stat-value">${unread}개</div></div>
   `;
   // 리더보드 - 공동순위 반영
-  const sorted = [...students].sort((a,b) => (b.points||0)-(a.points||0)).slice(0, 8);
+  const sorted = [...students].sort((a,b) => {
+  const pd = (b.points||0) - (a.points||0);
+  if (pd !== 0) return pd;
+  return (a.number||999) - (b.number||999);
+}).slice(0, 8);
   const lbRanks = [];
   let lbCurRank = 1;
   for (let i = 0; i < sorted.length; i++) {
