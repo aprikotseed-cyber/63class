@@ -2379,7 +2379,7 @@ async function checkPendingNotifs() {
         '🏅 칭호를 받았어요!',
         teacherEmoji,
         `선생님께서 <strong>'${t.titleEmoji||''} ${t.titleName}'</strong> 칭호를 부여해 주셨어요!<br>` +
-        `<span style="font-size:12px;color:var(--text-secondary);">내 보관함에서 확인하고 장착해보세요 😊</span>`
+        `<span style="font-size:12px;color:var(--text-secondary);">내 보관함에서 확인하고 장착해 보세요 😊</span>`
       );
     });
 
@@ -3160,7 +3160,7 @@ window.selectAllGiveStudents = function(selectAll) {
 window.giveCard = async function() {
   const c = pendingGiveCard;
   if (!c) return;
-  if (selectedGiveStudentIds.size === 0) return showToast('학생을 선택해주세요');
+  if (selectedGiveStudentIds.size === 0) return showToast('학생을 선택해 주세요');
   const memo = document.getElementById('giveCardMemo').value.trim();
   const delta = c.type === 'praise' ? c.point : -c.point;
   const selectedStudents = students.filter(s => selectedGiveStudentIds.has(s.id));
@@ -3777,7 +3777,7 @@ async function loadBanner(isTeacher) {
     const totalPts = sSnap.docs.reduce((sum, doc) => sum + (doc.data().points || 0), 0);
 
     // 함께한 날 계산
-    let daysText = '시작일을 설정해주세요';
+    let daysText = '시작일을 설정해 주세요';
     if (startDate) {
       const start = new Date(startDate);
       const today = new Date();
@@ -3837,7 +3837,7 @@ window.openAttendCheck = async function() {
 
 window.submitAttendance = async function() {
   const message = document.getElementById('attendMessage').value.trim();
-  if (!message) return showToast('한 마디를 입력해주세요');
+  if (!message) return showToast('한 마디를 입력해 주세요');
   const today = getTodayStr();
   try {
     // 출석 기록 저장
@@ -4293,7 +4293,7 @@ window.filterInventoryReward = async function(category, btn) {
       list.innerHTML = `<div class="empty-state" style="padding:40px;">
         <div class="empty-icon">${category==='study'?'📚':'🍭'}</div>
         <h3>아직 ${category==='study'?'학습':'간식'} 코너 보상이 없어요</h3>
-        <p>보상 상점에서 포인트로 교환해보세요!</p>
+        <p>보상 상점에서 포인트로 교환해 보세요!</p>
       </div>`;
       return;
     }
@@ -4446,7 +4446,7 @@ window.openEquipTitleModal = async function() {
       <span class="title-badge ${getTitleClass(t.titleGrade)}">${t.titleEmoji||''} ${t.titleName}</span>
       ${t.titleId===equippedId ? '<span style="margin-left:auto;font-size:12px;color:var(--primary);font-weight:600;">장착 중 ✓</span>' : ''}
     </div>
-  `).join('') : '<div class="empty-state" style="padding:30px;"><p>보유한 칭호가 없어요<br>꾸미기 상점에서 구매해보세요!</p></div>';
+  `).join('') : '<div class="empty-state" style="padding:30px;"><p>보유한 칭호가 없어요<br>꾸미기 상점에서 구매해 보세요!</p></div>';
   openModal('equipTitleModal');
 };
 
@@ -4475,7 +4475,7 @@ async function loadNotice(isTeacher) {
     if (!nDoc.exists() || !nDoc.data().content) {
       // 공지 없음
       if (isTeacher) {
-        document.getElementById('teacherNoticeContent').innerHTML = '<span class="notice-empty">공지사항을 작성해보세요</span>';
+        document.getElementById('teacherNoticeContent').innerHTML = '<span class="notice-empty">공지사항을 작성해 보세요</span>';
       } else {
         document.getElementById('studentNoticeBox').style.display = 'none';
       }
@@ -4507,7 +4507,7 @@ async function loadNotice(isTeacher) {
 window.openNoticeModal = function() {
   const current = document.getElementById('teacherNoticeContent').textContent;
   document.getElementById('noticeInput').value =
-    current.includes('공지사항을 작성해보세요') ? '' : current;
+    current.includes('공지사항을 작성해 보세요') ? '' : current;
   openModal('noticeModal');
 };
 
@@ -4531,7 +4531,7 @@ window.deleteNotice = async function() {
   if (!confirm('공지사항을 삭제할까요?')) return;
   try {
     await deleteDoc(doc(db, 'config', 'notice'));
-    document.getElementById('teacherNoticeContent').innerHTML = '<span class="notice-empty">공지사항을 작성해보세요</span>';
+    document.getElementById('teacherNoticeContent').innerHTML = '<span class="notice-empty">공지사항을 작성해 보세요</span>';
     showToast('공지사항이 삭제됐어요');
   } catch(e) { showToast('오류: ' + e.message); }
 };
