@@ -5197,11 +5197,11 @@ async function renderMyPoints() {
     const isExchangeApproved = h.source === 'exchange_approved';
     const isExchangeRejected = h.source === 'exchange_rejected';
     if (isAttendance) {
-      msg = `출석 체크를 통해 ${Math.abs(h.delta)}🪙을 얻었어요. ✅`;
+      msg = `출석 체크를 통해 ${Math.abs(h.delta)}🪙을 얻었어요.`;
     } else if (isExchangeReq) {
       msg = `구매할 보상 '${h.reason}'을(를) 교환 신청하여 ${Math.abs(h.delta)}🪙이 차감됐어요.`;
     } else if (isExchangeApproved) {
-      msg = `보상 교환 신청이 승인됐어요. ✅`;
+      msg = `보상 교환 신청이 승인됐어요.`;
     } else if (isExchangeRejected) {
       msg = `보상 교환 신청이 거절되어 ${Math.abs(h.delta)}🪙을 돌려받았어요.`;
     } else if (isShop) {
@@ -5222,7 +5222,7 @@ async function renderMyPoints() {
     }
     return `
     <div class="history-item">
-      <div class="history-icon ${h.type}">${isPlus ? '📈' : '📉'}</div>
+      <div class="history-icon ${h.type}">${isExchangeApproved ? '✅' : isPlus ? '📈' : '📉'}</div>
       <div class="history-text">
         <div class="history-reason">${msg}</div>
         <div class="history-date">${formatTime(h.createdAt)}</div>
