@@ -2358,7 +2358,7 @@ function calcLevel(accum) {
     const maxPts = t.maxLv === Infinity ? Infinity : (t.maxLv - lv) * t.perLv;
     if (pts < maxPts || t.maxLv === Infinity) {
       lv += Math.floor(pts / t.perLv);
-      return lv;
+    return lv + 1;
     }
     pts -= maxPts;
     lv = t.maxLv;
