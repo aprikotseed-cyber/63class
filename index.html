@@ -4666,6 +4666,7 @@ async function renderInventoryDecor() {
         const lvTxt = `<span class="${txtCls}" style="${txtCls?'':'color:rgba(255,255,255,0.9);'}font-size:14px;font-weight:700;">Lv.1</span>`;
         const btnRow = `<div style="display:flex;gap:8px;margin-top:8px;">
          ${isEquipped ? '<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:6px;">✓ 장착 중</div>' : ''}
+        const btnRow = `<div style="display:flex;gap:8px;margin-top:8px;">
               ${isEquipped
                 ? `<button class="btn btn-secondary btn-sm" onclick="unequipFrame()">해제</button>`
                 : `<button class="btn btn-primary btn-sm" onclick="equipFrame('${f.frameId}')">사용</button>`}
