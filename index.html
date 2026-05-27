@@ -4665,10 +4665,11 @@ async function renderInventoryDecor() {
         const nameTxt = `<span class="${txtCls}" style="${txtCls?'':'color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.4);'}font-size:18px;font-weight:700;">${fd.name||f.frameName}</span>`;
         const lvTxt = `<span class="${txtCls}" style="${txtCls?'':'color:rgba(255,255,255,0.9);'}font-size:14px;font-weight:700;">Lv.1</span>`;
         const btnRow = `<div style="display:flex;gap:8px;margin-top:8px;">
-          ${isEquipped ? '<span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);text-shadow:0 1px 3px rgba(0,0,0,0.4);">✓ 장착 중</span>' : ''}
-          <button class="btn btn-primary btn-sm" onclick="equipFrame('${f.frameId}')">사용</button>
-          ${isEquipped ? `<button class="btn btn-secondary btn-sm" onclick="unequipFrame()">해제</button>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="deleteMyFrame('${f.docId}','${f.frameId}','${fd.name||f.frameName}')">삭제</button>
+         ${isEquipped ? '<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:6px;">✓ 장착 중</div>' : ''}
+              ${isEquipped
+                ? `<button class="btn btn-secondary btn-sm" onclick="unequipFrame()">해제</button>`
+                : `<button class="btn btn-primary btn-sm" onclick="equipFrame('${f.frameId}')">사용</button>`}
+              <button class="btn btn-danger btn-sm" onclick="deleteMyFrame('${f.docId}','${f.frameId}','${fd.name||f.frameName}')">삭제</button>
         </div>`;
         return `
         <div id="invFrame-${f.docId}" class="frame-card">
