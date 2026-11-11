@@ -1,10 +1,10 @@
 // profile.js — 학생 설정·비밀번호·프로필 메시지
-import { state } from './state.js?v=20261111c';
-import { EmailAuthProvider, addDoc, auth, collection, db, doc, reauthenticateWithCredential, serverTimestamp, updateDoc, updatePassword } from './firebase.js?v=20261111c';
-import { closeModal, getMyStudentData, openModal, showToast } from './core.js?v=20261111c';
-import { makePw } from './level.js?v=20261111c';
-import { pwCandidates, savePwHint } from './accounts.js?v=20261111c';
-import { buildCharHtml } from './avatar.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
+import { EmailAuthProvider, addDoc, auth, collection, db, doc, reauthenticateWithCredential, serverTimestamp, updateDoc, updatePassword } from './firebase.js?v=20261111d';
+import { closeModal, getMyStudentData, openModal, showToast } from './core.js?v=20261111d';
+import { makePw } from './level.js?v=20261111d';
+import { pwCandidates, savePwHint } from './accounts.js?v=20261111d';
+import { buildCharHtml } from './avatar.js?v=20261111d';
 
 // ===== 학생: 설정 =====
 window.saveProfile = async function() {

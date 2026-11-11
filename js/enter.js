@@ -1,20 +1,20 @@
 // enter.js — 로그인 후 앱 진입, 대기 중 알림 확인, 로그아웃
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   auth, collection, db, deleteDoc, doc, getDocs, onSnapshot, query, signOut, updateDoc, where
-} from './firebase.js?v=20261111c';
-import { getCfgTeacher, getMyStudentData } from './core.js?v=20261111c';
-import { resetAutoLogoutTimer } from './auth.js?v=20261111c';
-import { loadSiteSettings } from './site-config.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { getCfgTeacher, getMyStudentData } from './core.js?v=20261111d';
+import { resetAutoLogoutTimer } from './auth.js?v=20261111d';
+import { loadSiteSettings } from './site-config.js?v=20261111d';
 import {
   listenExchanges, listenMessages, listenRewards, listenStudents, pushNotif
-} from './realtime.js?v=20261111c';
-import { renderStudentPendingExchanges } from './exchanges.js?v=20261111c';
-import { loadAttendPoint } from './attendance.js?v=20261111c';
-import { checkMissedRoles } from './roles.js?v=20261111c';
-import { escapeHtml } from './board.js?v=20261111c';
-import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261111c';
-import { initStudentAvatar } from './avatar.js?v=20261111c';
+} from './realtime.js?v=20261111d';
+import { renderStudentPendingExchanges } from './exchanges.js?v=20261111d';
+import { loadAttendPoint } from './attendance.js?v=20261111d';
+import { checkMissedRoles } from './roles.js?v=20261111d';
+import { escapeHtml } from './board.js?v=20261111d';
+import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261111d';
+import { initStudentAvatar } from './avatar.js?v=20261111d';
 
 // ===== 앱 진입 =====
 export async function enterApp() {
@@ -88,9 +88,6 @@ export async function enterApp() {
   if (state.currentUser.role === 'teacher') {
     document.getElementById('teacherMenu').classList.remove('hidden');
     document.getElementById('studentMenu').classList.add('hidden');
-    document.getElementById('floatingLogBtn').style.display = 'flex';
-    document.getElementById('floatingLogBtn').style.alignItems = 'center';
-    document.getElementById('floatingLogBtn').style.justifyContent = 'center';
     document.getElementById('floatingCheckBtn').style.display = 'flex';
     document.getElementById('floatingCheckBtn').style.alignItems = 'center';
     document.getElementById('floatingCheckBtn').style.justifyContent = 'center';
@@ -363,7 +360,6 @@ window.logout = async function() {
   // 메뉴 초기화
   document.getElementById('teacherMenu').classList.add('hidden');
   document.getElementById('studentMenu').classList.add('hidden');
-  document.getElementById('floatingLogBtn').style.display = 'none';
   document.getElementById('floatingCheckBtn').style.display = 'none';
 
   // 사이드바 active 초기화

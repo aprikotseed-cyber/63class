@@ -1,13 +1,13 @@
 // dungeon-admin.js — 던전 관리 (교사: 설정·이미지 라이브러리·보스)
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   collection, db, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261111c';
-import { closeModal, showToast } from './core.js?v=20261111c';
-import { getTodayStr } from './attendance.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { closeModal, showToast } from './core.js?v=20261111d';
+import { getTodayStr } from './attendance.js?v=20261111d';
 import {
   loadQuizDungeonBoss, loadQuizDungeonConfig, loadQuizDungeonManageStatus
-} from './quiz-dungeon.js?v=20261111c';
+} from './quiz-dungeon.js?v=20261111d';
 
 // ===================================================
 // ⚔️ 던전 시스템

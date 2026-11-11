@@ -5,12 +5,12 @@
 //   (예전엔 학생 문서의 pwHint 에 있어서 다른 학생도 읽을 수 있었어요)
 // · 선생님 쪽에서 학생 계정으로 로그인해야 할 때는 보조 로그인 창구(getHelperAuth)를 써서
 //   선생님 로그인이 풀리지 않게 해요.
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   createUserWithEmailAndPassword, db, deleteDoc, deleteField, doc, getDoc, getHelperAuth,
   serverTimestamp, setDoc, signInWithEmailAndPassword, signOut, updateDoc
-} from './firebase.js?v=20261111c';
-import { makePw, nameToEmail } from './level.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { makePw, nameToEmail } from './level.js?v=20261111d';
 
 export const SECRETS = 'studentSecrets';
 

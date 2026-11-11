@@ -1,11 +1,11 @@
 // attendance.js — 출석 체크, 주간 출석 현황
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   addDoc, collection, db, doc, getDoc, getDocs, increment, query, serverTimestamp, setDoc,
   updateDoc, where
-} from './firebase.js?v=20261111c';
-import { closeModal, openModal, showToast } from './core.js?v=20261111c';
-import { loadBanner } from './home.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { closeModal, openModal, showToast } from './core.js?v=20261111d';
+import { loadBanner } from './home.js?v=20261111d';
 
 // ===== 출석 체크 (학생) =====
 export function getTodayStr() {

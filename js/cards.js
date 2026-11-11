@@ -1,17 +1,17 @@
 // cards.js — 칭찬/벌점 카드 관리·부여·내역·회수
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, limit,
   orderBy, query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261111c';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111c';
-import { formatTime } from './level.js?v=20261111c';
-import { discountHtml } from './shop.js?v=20261111c';
-import { reloadRewards, reloadStudents } from './realtime.js?v=20261111c';
-import { renderDashboard } from './dashboard.js?v=20261111c';
-import { makeAbilityTags } from './titles.js?v=20261111c';
-import { buildCharHtml } from './avatar.js?v=20261111c';
-import { fadePanel } from './ui.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111d';
+import { formatTime } from './level.js?v=20261111d';
+import { discountHtml } from './shop.js?v=20261111d';
+import { reloadRewards, reloadStudents } from './realtime.js?v=20261111d';
+import { renderDashboard } from './dashboard.js?v=20261111d';
+import { makeAbilityTags } from './titles.js?v=20261111d';
+import { buildCharHtml } from './avatar.js?v=20261111d';
+import { fadePanel } from './ui.js?v=20261111d';
 
 export let praiseCards = [];
 let currentCardTab = 'praise';

@@ -1,7 +1,7 @@
 // emoji-picker.js — 이모지 선택창
-import { state } from './state.js?v=20261111c';
-import { db, doc, setDoc, updateDoc } from './firebase.js?v=20261111c';
-import { closeModal, openModal, showToast } from './core.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
+import { db, doc, setDoc, updateDoc } from './firebase.js?v=20261111d';
+import { closeModal, openModal, showToast } from './core.js?v=20261111d';
 
 const EMOJI_LIST_LOGO = ['🏫','🌟','🎓','🌈','🏆','🎯','📚','✏️','🖊️','🎨','🌱','🌻','🌍','🦋','🐝','🎪','🎡','🏠','🌙','☀️','🪙','💫','🔥','💡','🎵','🎶','🎮','🚀','🌺','🍀','🧩','🎭','🏅','🌠','⭐','🌊','🍃','🦚','🦜','🌴','🎋','🪴','🏔️','🌅','🌄','🌇','🎠','🎪','🧸','🪆'];
 const EMOJI_CATS = {

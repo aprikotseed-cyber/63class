@@ -1,8 +1,8 @@
 // backup.js — 전체 데이터 백업 (교사 전용, 읽기만 하고 데이터는 바꾸지 않아요)
-import { state } from './state.js?v=20261111c';
-import { collection, db, getDocs } from './firebase.js?v=20261111c';
-import { showToast } from './core.js?v=20261111c';
-import { BACKUP_COLLECTIONS, backupFileName, makeBackup } from './backup-format.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
+import { collection, db, getDocs } from './firebase.js?v=20261111d';
+import { showToast } from './core.js?v=20261111d';
+import { BACKUP_COLLECTIONS, backupFileName, makeBackup } from './backup-format.js?v=20261111d';
 
 const APP_VERSION = new URL(import.meta.url).searchParams.get('v') || 'dev';
 

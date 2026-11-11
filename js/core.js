@@ -1,6 +1,6 @@
 // core.js — 전역 상태·상수, 설정 캐시, 공통 유틸(토스트·모달)
-import { state } from './state.js?v=20261111c';
-import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
+import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261111d';
 
 // ===== 전역 상태 =====
 // (여러 파일이 함께 쓰는 상태는 state.js 에 있어요)

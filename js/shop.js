@@ -1,14 +1,14 @@
 // shop.js — 보상 상점·보상 관리·할인·재고 현황
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   addDoc, collection, db, doc, getDoc, getDocs, increment, query, serverTimestamp, updateDoc,
   where
-} from './firebase.js?v=20261111c';
-import { closeModal, getMyExchanges, getMyStudentData, openModal, showToast } from './core.js?v=20261111c';
-import { reloadRewards, reloadStudents } from './realtime.js?v=20261111c';
-import { renderRewards } from './cards.js?v=20261111c';
-import { loadBanner } from './home.js?v=20261111c';
-import { renderCrowdfunding } from './crowdfunding.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { closeModal, getMyExchanges, getMyStudentData, openModal, showToast } from './core.js?v=20261111d';
+import { reloadRewards, reloadStudents } from './realtime.js?v=20261111d';
+import { renderRewards } from './cards.js?v=20261111d';
+import { loadBanner } from './home.js?v=20261111d';
+import { renderCrowdfunding } from './crowdfunding.js?v=20261111d';
 
 // 할인 미리보기
 window.updateDiscountPreview = function() {
