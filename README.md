@@ -67,7 +67,6 @@ js/dashboard.js     교사 대시보드
 js/students.js      학생 목록·포인트/능력치 수정·일괄 추가
 js/student-detail.js 학생/친구 상세 보기
 js/admin.js         데이터 초기화, 학생 계정 관리·재생성·마이그레이션
-js/logs.js          누가기록
 js/checklist.js     체크표 시스템
 
 학급 활동

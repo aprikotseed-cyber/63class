@@ -1,8 +1,8 @@
 // notice.js — 공지사항
-import { state } from './state.js?v=20261111c';
-import { db, doc, getDoc } from './firebase.js?v=20261111c';
-import { getCfgTeacher, openModal } from './core.js?v=20261111c';
-import { pushNotif } from './realtime.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
+import { db, doc, getDoc } from './firebase.js?v=20261111d';
+import { getCfgTeacher, openModal } from './core.js?v=20261111d';
+import { pushNotif } from './realtime.js?v=20261111d';
 
 // ===== 공지사항 =====
 export async function loadNotice(isTeacher) {

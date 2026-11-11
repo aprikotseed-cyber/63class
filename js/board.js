@@ -1,11 +1,11 @@
 // board.js — 자유게시판
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   addDoc, arrayUnion, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment,
   limit, orderBy, query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111c';
-import { closeModal, getCfgTeacher, getMyStudentData, openModal, showToast } from './core.js?v=20261111c';
-import { formatTime } from './level.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { closeModal, getCfgTeacher, getMyStudentData, openModal, showToast } from './core.js?v=20261111d';
+import { formatTime } from './level.js?v=20261111d';
 
 // ===== 자유게시판 (실명, 글쓰기+댓글) =====
 const BOARD_PAGE_SIZE = 10;   // 한 페이지에 보여줄 글 수

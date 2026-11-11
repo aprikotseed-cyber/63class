@@ -1,13 +1,13 @@
 // auth.js — 로그인(교사/학생), 자동 로그아웃, 교사 비밀번호 변경
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   EmailAuthProvider, auth, browserSessionPersistence, collection, createUserWithEmailAndPassword, db,
   deleteField, doc, getDoc, getDocs, query, reauthenticateWithCredential, serverTimestamp, setDoc,
   setPersistence, signInWithEmailAndPassword, signOut, updateDoc, updatePassword, where
-} from './firebase.js?v=20261111c';
-import { getCfgTeacher, showToast } from './core.js?v=20261111c';
-import { makePw, nameToEmail } from './level.js?v=20261111c';
-import { enterApp } from './enter.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { getCfgTeacher, showToast } from './core.js?v=20261111d';
+import { makePw, nameToEmail } from './level.js?v=20261111d';
+import { enterApp } from './enter.js?v=20261111d';
 
 // ===== 로그인 탭 =====
 window.switchLoginTab = function(tab, btn) {

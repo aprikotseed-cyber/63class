@@ -1,9 +1,9 @@
 // cleanup.js — 데이터 정리 도구 (교사 전용): 검사 → 결과 확인 → 백업 → 실행
-import { state } from './state.js?v=20261111c';
-import { collection, db, deleteField, doc, getDoc, getDocs, query, serverTimestamp, where, writeBatch } from './firebase.js?v=20261111c';
-import { closeModal, openModal, showToast } from './core.js?v=20261111c';
-import { SECRETS } from './accounts.js?v=20261111c';
-import { ORPHAN_COLLECTIONS, chunk, countByCol, oldReadNotifications, planOrphans } from './cleanup-plan.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
+import { collection, db, deleteField, doc, getDoc, getDocs, query, serverTimestamp, where, writeBatch } from './firebase.js?v=20261111d';
+import { closeModal, openModal, showToast } from './core.js?v=20261111d';
+import { SECRETS } from './accounts.js?v=20261111d';
+import { ORPHAN_COLLECTIONS, chunk, countByCol, oldReadNotifications, planOrphans } from './cleanup-plan.js?v=20261111d';
 
 const MODAL_ID = 'cleanupModal';
 let _plan = null; // 검사 결과
@@ -41,7 +41,7 @@ window.openCleanupModal = function() {
         <span style="font-size:12px;color:var(--text-muted);">기록 전체를 한 번 읽어서 읽기 사용량이 백업할 때만큼 한 번 늘어요</span></span>
       </label>
     </div>
-    <div style="font-size:12px;color:var(--text-muted);margin-top:10px;">누가기록·게시판·체크표는 대상이 아니에요.</div>`);
+    <div style="font-size:12px;color:var(--text-muted);margin-top:10px;">누가기록(예전 기록)·게시판·체크표는 대상이 아니에요.</div>`);
   setActions(`<button class="btn btn-secondary" onclick="closeModal('${MODAL_ID}')">닫기</button>
     <button class="btn btn-primary" id="cleanupScanBtn" onclick="runCleanupScan()">🔍 검사하기</button>`);
   openModal(MODAL_ID);

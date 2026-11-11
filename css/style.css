@@ -571,7 +571,6 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
   text-align: center;
 }
 /* 공통 섹션 헤더 (칭호/꾸미기/보관함 등) */
-/* 누가기록 카테고리 버튼 */
 /* ===== 1인1역 시스템 ===== */
 .role-card {
   background: var(--surface); border-radius: var(--radius-lg);
@@ -733,36 +732,6 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
   outline:none;text-align:center;color:var(--text-primary);
 }
 .check-table input[type=text]:focus { background:var(--primary-light);border-radius:4px; }
-
-.log-cat-btn {
-  padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
-  background: var(--surface); color: var(--text-secondary);
-  font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.15s;
-}
-.log-cat-btn.active {
-  background: var(--primary); color: #fff; border-color: var(--primary);
-}
-/* 누가기록 타임라인 */
-.log-entry {
-  background: var(--surface); border-radius: var(--radius-md);
-  border: 1px solid var(--border); padding: 14px 16px;
-  margin-bottom: 10px; position: relative;
-  border-left: 4px solid var(--primary);
-  transition: box-shadow 0.15s;
-}
-.log-entry:hover { box-shadow: var(--shadow-md); }
-.log-entry-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-.log-entry-meta { font-size:12px; color:var(--text-muted); }
-.log-entry-content { font-size:14px; line-height:1.65; white-space:pre-wrap; }
-.log-cat-badge {
-  font-size:11px; padding:2px 8px; border-radius:10px;
-  background:var(--primary-light); color:var(--primary); font-weight:600;
-}
-.log-cat-badge.생활지도 { background:#fef3c7; color:#d97706; }
-.log-cat-badge.학습 { background:#dbeafe; color:#2563eb; }
-.log-cat-badge.상담 { background:#dcfce7; color:#16a34a; }
-.log-cat-badge.특이사항 { background:#fee2e2; color:#dc2626; }
-.log-cat-badge.기타 { background:#f3f4f6; color:#6b7280; }
 
 /* 던전 관리 능력치 보상 통일 스타일 */
 .dg-ab-label {

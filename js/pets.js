@@ -1,17 +1,17 @@
 // pets.js — 펫 시스템
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   addDoc, collection, db, doc, getDoc, getDocs, increment, query, serverTimestamp, setDoc,
   updateDoc, where
-} from './firebase.js?v=20261111c';
-import { closeModal, openModal, showToast } from './core.js?v=20261111c';
-import { reloadStudents } from './realtime.js?v=20261111c';
-import { initFrameGrids, renderInventoryDecor } from './frames.js?v=20261111c';
-import { renderInventoryAvatar, renderInventoryTitles } from './inventory.js?v=20261111c';
-import { buildCharHtml } from './avatar.js?v=20261111c';
-import { renderAvatarShop } from './avatar-shop.js?v=20261111c';
-import { fadePanel } from './ui.js?v=20261111c';
-import { renderExchanges } from './exchanges.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { closeModal, openModal, showToast } from './core.js?v=20261111d';
+import { reloadStudents } from './realtime.js?v=20261111d';
+import { initFrameGrids, renderInventoryDecor } from './frames.js?v=20261111d';
+import { renderInventoryAvatar, renderInventoryTitles } from './inventory.js?v=20261111d';
+import { buildCharHtml } from './avatar.js?v=20261111d';
+import { renderAvatarShop } from './avatar-shop.js?v=20261111d';
+import { fadePanel } from './ui.js?v=20261111d';
+import { renderExchanges } from './exchanges.js?v=20261111d';
 
 // ===== 🐾 펫 시스템 =====
 let petEquipped = null;   // 현재 착용한 펫 ID

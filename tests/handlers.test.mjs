@@ -42,3 +42,9 @@ test('화면 버튼(onclick 등)이 부르는 함수가 모두 window에 등록�
   }
   assert.deepEqual([...missing], []);
 });
+
+test('메뉴(navigate)가 가리키는 화면(section)이 모두 index.html에 있다', () => {
+  const targets = new Set([...html.matchAll(/navigate\('([A-Za-z]+)'\)/g)].map((m) => m[1]));
+  const missing = [...targets].filter((t) => !html.includes(`id="page-${t}"`));
+  assert.deepEqual(missing, [], '메뉴는 있는데 화면이 없어요');
+});

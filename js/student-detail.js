@@ -1,8 +1,8 @@
 // student-detail.js — 학생/친구 상세 보기
-import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261111c';
-import { openModal } from './core.js?v=20261111c';
-import { formatTime, getAbilityRank } from './level.js?v=20261111c';
-import { loadChartJs } from './books.js?v=20261111c';
+import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261111d';
+import { openModal } from './core.js?v=20261111d';
+import { formatTime, getAbilityRank } from './level.js?v=20261111d';
+import { loadChartJs } from './books.js?v=20261111d';
 
 // ===== 교사 홈: 학생 상세 정보 모달 =====
 // ===== 학생: 친구 상세 보기 =====

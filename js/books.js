@@ -1,14 +1,14 @@
 // books.js — 독서량, 독서 완료 카드
-import { state } from './state.js?v=20261111c';
+import { state } from './state.js?v=20261111d';
 import {
   addDoc, collection, db, doc, getDoc, getDocFromServer, getDocs, increment, query,
   serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111c';
-import { closeModal, openModal, showToast } from './core.js?v=20261111c';
-import { checkAndGrantRankUp } from './level.js?v=20261111c';
-import { reloadStudents } from './realtime.js?v=20261111c';
-import { renderDashboard } from './dashboard.js?v=20261111c';
-import { praiseCards, reloadPraiseCards } from './cards.js?v=20261111c';
+} from './firebase.js?v=20261111d';
+import { closeModal, openModal, showToast } from './core.js?v=20261111d';
+import { checkAndGrantRankUp } from './level.js?v=20261111d';
+import { reloadStudents } from './realtime.js?v=20261111d';
+import { renderDashboard } from './dashboard.js?v=20261111d';
+import { praiseCards, reloadPraiseCards } from './cards.js?v=20261111d';
 
 // ===== 독서량 (교사/학생 공통) =====
 let _bookChartInstance = null;
