@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// 육삼레벨업 Firestore 보안 규칙
+// Firebase 콘솔 → Firestore Database → 규칙(Rules) 탭에 이 내용을 그대로 붙여 넣고 [게시]를 눌러요.
+// (README의 "보안 규칙 적용 순서"를 먼저 읽어 주세요)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isTeacher() {
+      return signedIn() && request.auth.token.email == 'teacher@ourclass.kr';
+    }
+
+    // 사이트 설정·선생님 아이디 등: 로그인 화면에서도 읽어야 해서 누구나 읽기 가능
+    // (선생님 비밀번호는 더 이상 여기 저장하지 않아요)
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    // 학생 비밀번호 기록: 선생님만 읽을 수 있어요.
+    // 학생은 자기 비밀번호를 바꿀 때 자기 기록만 쓸 수 있어요(읽기는 못 해요).
+    match /studentSecrets/{studentId} {
+      allow read: if isTeacher();
+      allow write: if isTeacher() || (signedIn() && request.auth.uid == studentId);
+    }
+
+    // 그 밖의 모든 기록: 로그인한 사람만 (지금까지와 같은 범위)
+    match /{collectionName}/{docId} {
+      allow read, write: if signedIn()
+        && collectionName != 'studentSecrets'
+        && collectionName != 'config';
+    }
+  }
+}

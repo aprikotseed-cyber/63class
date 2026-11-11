@@ -8,7 +8,7 @@ export const BACKUP_COLLECTIONS = [
   'bookWeeks', 'studentLogs', 'roles', 'checkTableRows', 'frameInventory', 'roleRewardBatches',
   'checkTables', 'attendance', 'crowdfundingLogs', 'checkTableCardLog', 'titles', 'titleDeleted',
   'studentLogsDeleted', 'praiseCards', 'petInventory', 'boardComments', 'roleBids', 'profileMsgLog',
-  'frameDeleted', 'bookCardLog', 'avatarInventory', 'cardSubTabs',
+  'frameDeleted', 'bookCardLog', 'avatarInventory', 'cardSubTabs', 'studentSecrets',
 ];
 
 // Firestore 값(Timestamp 등)을 JSON으로 저장할 수 있는 형태로 바꿔요.

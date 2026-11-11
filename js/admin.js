@@ -1,15 +1,16 @@
 // admin.js — 데이터 초기화, 학생 계정 관리·재생성·마이그레이션
-import { state } from './state.js?v=20261111b';
+import { state } from './state.js?v=20261111c';
 import {
-  addDoc, auth, collection, createUserWithEmailAndPassword, db, deleteDoc, doc, getDoc, getDocs,
-  increment, query, serverTimestamp, setDoc, signInWithEmailAndPassword, updateDoc, updatePassword,
+  addDoc, collection, db, deleteDoc, doc, getDoc, getDocs,
+  increment, query, serverTimestamp, setDoc, updateDoc, updatePassword,
   where
-} from './firebase.js?v=20261111b';
-import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261111b';
-import { makePw, nameToEmail } from './level.js?v=20261111b';
-import { reloadStudents } from './realtime.js?v=20261111b';
-import { renderDashboard } from './dashboard.js?v=20261111b';
-import { renderStudentList } from './students.js?v=20261111b';
+} from './firebase.js?v=20261111c';
+import { closeModal, openModal, showToast } from './core.js?v=20261111c';
+import { makePw, nameToEmail } from './level.js?v=20261111c';
+import { getPwHint, helperCreateStudent, helperSignInStudent, helperSignOut, removePwHint, savePwHint } from './accounts.js?v=20261111c';
+import { reloadStudents } from './realtime.js?v=20261111c';
+import { renderDashboard } from './dashboard.js?v=20261111c';
+import { renderStudentList } from './students.js?v=20261111c';
 
 // ===== 데이터 초기화 =====
 // 전체 프레임 인벤토리 초기화
@@ -206,16 +207,14 @@ window.checkStudentAccounts = async function() {
     for (let i = 0; i < state.students.length; i++) {
       const st = state.students[i];
       showToast(`점검 중... (${i+1}/${state.students.length}) ${st.name}`);
-      if (!st.pwHint) { unknown.push(st.name); continue; }
-      const email = nameToEmail(st.name);
-      let done = false, lastCode = '';
-      for (const pw of [makePw(st.pwHint), st.pwHint]) {
-        try { await signInWithEmailAndPassword(auth, email, pw); done = true; break; } catch(e) { lastCode = e.code || ''; }
-      }
-      if (done) ok.push(st.name); else bad.push(`${st.name} (${lastCode.replace('auth/','')})`);
+      const hint = await getPwHint(st.id);
+      if (!hint) { unknown.push(st.name); continue; }
+      // 보조 창구로 로그인 시도 (선생님 로그인은 그대로)
+      const r = await helperSignInStudent(st.name, [hint]);
+      if (r.user) ok.push(st.name); else bad.push(`${st.name} (${(r.code || '').replace('auth/','')})`);
     }
   } finally {
-    try { await _reloginTeacher(); } catch(e) {}
+    await helperSignOut();
   }
   alert(`[로그인 점검 결과]\n\n정상 ${ok.length}명\n\n문제 있음 ${bad.length}명:\n${bad.join('\n') || '없음'}\n\n비밀번호 기록 없어 확인 불가 ${unknown.length}명:\n${unknown.join(', ') || '없음'}\n\n※ 문제 있음 = 계정이 지워졌거나, 학생이 비밀번호를 직접 바꿔 기록과 달라진 경우예요.\n해당 학생의 "🔒 비번변경"에서 새 비밀번호를 넣고 [비밀번호 변경]을 눌러보세요. 실패하면 나타나는 "계정 재생성"을 누르면, 계정이 지워진 학생은 Console 작업 없이 바로 복원되고 포인트·기록도 그대로 이어져요.`);
 };
@@ -234,33 +233,30 @@ window.addStudent = async function() {
   if (state.students.find(s => s.name === name)) return showToast('이미 같은 이름의 학생이 있어요');
   const email = nameToEmail(name);
   try {
-    // Firebase Auth에 계정 생성 시도
-    const cred = await createUserWithEmailAndPassword(auth, email, makePw(pw));
-    await setDoc(doc(db, 'students', cred.user.uid), {
-      name, points: 0, accumulatedPoints: 0, pwHint: pw, createdAt: serverTimestamp()
+    // 보조 창구로 계정 생성 (선생님 로그인은 그대로 유지)
+    const user = await helperCreateStudent(name, pw);
+    await setDoc(doc(db, 'students', user.uid), {
+      name, points: 0, accumulatedPoints: 0, createdAt: serverTimestamp()
     });
+    await savePwHint(user.uid, pw);
+    await helperSignOut();
     closeModal('addStudentModal');
     showToast(`${name} 학생이 추가됐어요! ✅`);
   } catch(e) {
     if (e.code === 'auth/email-already-in-use') {
-      // Auth 계정이 이미 존재 → 로그인해서 uid 가져온 후 Firestore 덮어쓰기
-      try {
-        const existCred = await signInWithEmailAndPassword(auth, email, makePw(pw));
-        const uid = existCred.user.uid;
-        await setDoc(doc(db, 'students', uid), {
-          name, points: 0, accumulatedPoints: 0, createdAt: serverTimestamp()
-        });
-        // 교사 계정으로 다시 로그인
-        const _tc4791 = await getCfgTeacher();
-        const teacherPw = _tc4791.password || '0124';
-        await signInWithEmailAndPassword(auth, 'teacher@ourclass.kr', makePw(teacherPw));
-        closeModal('addStudentModal');
-        showToast(`${name} 학생을 덮어써서 추가했어요! ✅`);
-      } catch(e2) {
-        // 비밀번호가 달라서 로그인 실패 → 안내
+      // Auth 계정이 이미 존재 → 같은 비밀번호로 로그인되면 그 계정에 학생 정보를 다시 만듦
+      const r = await helperSignInStudent(name, [pw]);
+      await helperSignOut();
+      if (!r.user) {
         showToast(`Auth 계정이 남아있어요. Firebase 콘솔에서 '${email}' 계정을 삭제 후 다시 시도하세요.`);
         return;
       }
+      await setDoc(doc(db, 'students', r.user.uid), {
+        name, points: 0, accumulatedPoints: 0, createdAt: serverTimestamp()
+      });
+      await savePwHint(r.user.uid, pw);
+      closeModal('addStudentModal');
+      showToast(`${name} 학생을 덮어써서 추가했어요! ✅`);
     } else {
       console.error(e);
       showToast('오류: ' + e.message);
@@ -341,24 +337,8 @@ window.resetStudentPassword = async function() {
   primaryBtn.disabled = true;
   primaryBtn.textContent = '변경 중...';
 
-  const email = nameToEmail(student.name);
   const finalPw = makePw(newPw);
-  const oldPwHint = student.pwHint || '';
-
-  // 시도할 기존 비밀번호 목록 (pwHint + 변형 + 흔히 쓰는 기본값)
-  const candidates = [
-    makePw(oldPwHint),
-    oldPwHint,
-    oldPwHint + '!!',
-  ].filter((p, i, arr) => p && arr.indexOf(p) === i);
-
-  const restoreTeacher = async () => {
-    try {
-      const teacherCfg = await getDoc(doc(db, 'config', 'teacher'));
-      const teacherPw = teacherCfg.data()?.password || '';
-      await signInWithEmailAndPassword(auth, 'teacher@ourclass.kr', makePw(teacherPw));
-    } catch(e2) {}
-  };
+  const oldPwHint = await getPwHint(student.id);
 
   const showFallback = (msg) => {
     statusEl.style.background = '#fef2f2';
@@ -370,42 +350,26 @@ window.resetStudentPassword = async function() {
   };
 
   try {
-    // 저장된 비밀번호로 학생 계정에 잠깐 로그인
-    let studentCred = null;
-    for (const pw of candidates) {
-      try {
-        studentCred = await signInWithEmailAndPassword(auth, email, pw);
-        break;
-      } catch(e) {}
-    }
+    // 저장된 비밀번호로 보조 창구에서 학생 계정에 잠깐 로그인 (선생님 로그인은 그대로)
+    const r = await helperSignInStudent(student.name, [oldPwHint]);
 
-    if (!studentCred) {
-      await restoreTeacher();
+    if (!r.user) {
       showFallback('⚠️ 저장된 비밀번호 정보로 로그인이 안 돼요. 학생이 비밀번호를 직접 바꿔서 기록과 달라진 것 같아요. 아래 "계정 재생성" 방법을 사용해주세요.');
       return;
     }
 
-    // 비밀번호 변경
-    await updatePassword(studentCred.user, finalPw);
-    // Firestore pwHint 업데이트
-    await updateDoc(doc(db, 'students', state.changePwTargetId), { pwHint: newPw });
-
-    // 교사 계정으로 복구
-    await restoreTeacher();
+    // 비밀번호 변경 + 기록 저장
+    await updatePassword(r.user, finalPw);
+    await savePwHint(student.id, newPw);
+    await helperSignOut();
 
     closeModal('changePwModal');
     showToast(`${student.name} 학생 비밀번호가 '${newPw}'(으)로 변경됐어요 ✅`);
   } catch(e) {
-    await restoreTeacher();
+    await helperSignOut();
     showFallback(`⚠️ 간편 변경에 실패했어요 (${e.message}). 아래 "계정 재생성" 방법을 사용해주세요.`);
   }
 };
-
-// 교사 계정으로 다시 로그인 (계정 생성 시 새 학생 계정으로 로그인 전환되므로 필수)
-async function _reloginTeacher() {
-  const cfg = await getCfgTeacher();
-  await signInWithEmailAndPassword(auth, 'teacher@ourclass.kr', makePw(cfg.password || '0124'));
-}
 
 // studentId 기준 컬렉션 / authorId 기준 컬렉션 목록 (이관·복구 공통)
 const MIGRATE_ID_COLS = [
@@ -475,21 +439,21 @@ window.doMigrateStudent = async function() {
   }
   if (!confirm(`${student.name} 학생의 계정을 재생성하고 비밀번호를 '${newPw}'로 설정할게요.\n\nFirebase Console에서 Auth 계정을 먼저 삭제하셨나요?`)) return;
 
-  const email = nameToEmail(student.name);
-  const finalPw = makePw(newPw);
   const oldUid = student.id;
   let newUid = null;
   try {
     showToast('1/3 계정 추가 중...');
-    const cred = await createUserWithEmailAndPassword(auth, email, finalPw);
-    newUid = cred.user.uid;
-    // 계정 생성 직후엔 새 학생 계정으로 로그인된 상태 → 교사 권한으로 되돌린 뒤 이관해야 다른 기록을 읽고 쓸 수 있음
-    await _reloginTeacher();
+    // 보조 창구로 계정 생성 (선생님 로그인은 그대로)
+    const user = await helperCreateStudent(student.name, newPw);
+    newUid = user.uid;
+    await helperSignOut();
 
     showToast('2/3 데이터 이관 중...');
     const oldSnap = await getDoc(doc(db, 'students', oldUid));
     const oldData = oldSnap.exists() ? oldSnap.data() : {};
-    await setDoc(doc(db, 'students', newUid), { ...oldData, pwHint: newPw, createdAt: serverTimestamp() });
+    delete oldData.pwHint; // 비밀번호 기록은 학생 문서가 아니라 보관함에
+    await setDoc(doc(db, 'students', newUid), { ...oldData, createdAt: serverTimestamp() });
+    await savePwHint(newUid, newPw);
 
     const result = await _migrateAllRecords(oldUid, newUid);
 
@@ -501,6 +465,7 @@ window.doMigrateStudent = async function() {
     }
     showToast('3/3 기존 계정 정리 중...');
     await deleteDoc(doc(db, 'students', oldUid));
+    await removePwHint(oldUid);
     const summary = Object.entries(result.moved).map(([c,n]) => `${c} ${n}`).join(', ') || '이관할 기록 없음';
     closeModal('changePwModal');
     showToast(`${student.name} 재생성 완료! 비밀번호: ${newPw} ✅ (${summary})`);
@@ -508,7 +473,7 @@ window.doMigrateStudent = async function() {
     renderStudentList();
     renderDashboard();
   } catch(e) {
-    if (newUid) { try { await _reloginTeacher(); } catch(e2) {} }
+    await helperSignOut();
     if (e.code === 'auth/email-already-in-use') {
       showToast('아직 Firebase Console에서 이 계정이 삭제되지 않았어요. Console에서 Authentication > Users 목록에 이 이메일이 남아있는지 확인하고 삭제한 뒤 다시 시도하세요.');
     } else {
@@ -527,14 +492,12 @@ window.repairStudentRecords = async function() {
     try {
       showToast('로그인 가능한 계정 확인 중...');
       // 1) 실제로 로그인되는(Firebase Auth에 살아있는) 계정 찾기: 저장된 비밀번호 후보로 로그인 시도 → 그 uid가 남길 계정
-      const email = nameToEmail(student.name);
-      const pws = [];
-      group.forEach(g => { if (g.pwHint) [makePw(g.pwHint), g.pwHint].forEach(x => { if (!pws.includes(x)) pws.push(x); }); });
-      let liveUid = null;
-      for (const pw of pws) {
-        try { liveUid = (await signInWithEmailAndPassword(auth, email, pw)).user.uid; break; } catch(e) {}
-      }
-      try { await _reloginTeacher(); } catch(e) {}
+      const hints = [];
+      for (const g of group) hints.push(await getPwHint(g.id));
+      const r = await helperSignInStudent(student.name, hints);
+      const liveUid = r.user?.uid || null;
+      const liveHint = r.user ? hints.find(h => h && (r.pw === h || r.pw === makePw(h))) : '';
+      await helperSignOut();
       let target = group.find(g => g.id === liveUid);
       let how = '실제 로그인 확인';
       if (!target) {
@@ -551,14 +514,18 @@ window.repairStudentRecords = async function() {
         const srcSnap = await getDoc(doc(db, 'students', dup.id));
         const srcData = srcSnap.exists() ? srcSnap.data() : {};
         const tgtData = tgtSnap.exists() ? tgtSnap.data() : {};
-        // 옛 데이터 값 기준으로 덮어쓰되 로그인 정보(pwHint)와 생성일은 남길 계정 것을 유지
-        await setDoc(doc(db, 'students', target.id), { ...srcData, pwHint: tgtData.pwHint ?? srcData.pwHint ?? '', createdAt: tgtData.createdAt || srcData.createdAt || serverTimestamp() });
+        // 옛 데이터 값 기준으로 덮어쓰되 생성일은 남길 계정 것을 유지 (비밀번호 기록은 보관함에 따로)
+        const merged = { ...srcData, createdAt: tgtData.createdAt || srcData.createdAt || serverTimestamp() };
+        delete merged.pwHint;
+        await setDoc(doc(db, 'students', target.id), merged);
+        if (liveHint && target.id === liveUid) await savePwHint(target.id, liveHint);
         const result = await _migrateAllRecords(dup.id, target.id);
         if (result.failed.length) {
           showToast(`일부 기록 이관 실패: ${result.failed.join(', ')}. 삭제할 계정은 남겨뒀어요.`);
           return;
         }
         await deleteDoc(doc(db, 'students', dup.id));
+        await removePwHint(dup.id);
         const sum = Object.entries(result.moved).map(([c,n]) => `${c} ${n}`).join(', ') || '이관할 기록 없음';
         showToast(`합치기 완료 ✅ (${sum})`);
       }

@@ -1,8 +1,8 @@
 // firebase.js — Firebase 연결 (앱·인증·DB) + 읽기 횟수 추적
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc as _getDoc, getDocs as _getDocs, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, onSnapshot as _onSnapshot, serverTimestamp, increment, limit, startAfter, arrayUnion, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, initializeAuth, inMemoryPersistence, EmailAuthProvider, reauthenticateWithCredential, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc as _getDoc, getDocs as _getDocs, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, onSnapshot as _onSnapshot, serverTimestamp, increment, limit, startAfter, arrayUnion, getDocFromServer, writeBatch, deleteField } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDkj-vid-uxIz0oTNrRdUP-XiGpCp-aNdI",
@@ -55,13 +55,29 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+// ===== 보조 로그인 창구 =====
+// 선생님이 학생 계정을 만들거나 학생 비밀번호를 바꿀 때 쓰는 두 번째 로그인 창구예요.
+// 여기서 학생으로 로그인해도 선생님의 로그인(auth)은 그대로 유지돼요.
+// (예전에는 선생님 로그인이 학생으로 바뀌었다가 config에 저장한 선생님 비밀번호로 다시 로그인했어요)
+let _helperAuth = null;
+export function getHelperAuth() {
+  if (!_helperAuth) {
+    const helperApp = initializeApp(firebaseConfig, 'helper');
+    _helperAuth = initializeAuth(helperApp, { persistence: inMemoryPersistence });
+    window.__onHelperAuth?.(_helperAuth); // 시험(에뮬레이터) 연결용, 평소엔 아무 일도 안 함
+  }
+  return _helperAuth;
+}
+
 // 다른 파일에서 쓰는 Firebase 함수들을 내보냄
 export {
   addDoc,
   arrayUnion,
   browserSessionPersistence,
   collection,
+  EmailAuthProvider,
   createUserWithEmailAndPassword,
+  deleteField,
   deleteDoc,
   doc,
   getDocFromServer,
@@ -70,6 +86,7 @@ export {
   onAuthStateChanged,
   orderBy,
   query,
+  reauthenticateWithCredential,
   serverTimestamp,
   setDoc,
   setPersistence,
@@ -78,4 +95,5 @@ export {
   updateDoc,
   updatePassword,
   where,
+  writeBatch,
 };
