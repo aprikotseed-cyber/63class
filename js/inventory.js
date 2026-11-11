@@ -1,23 +1,23 @@
 // inventory.js — 내 보관함 (보상·칭호·꾸미기·아바타)
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, increment, query, serverTimestamp,
   setDoc, updateDoc, where
-} from './firebase.js?v=20261111a';
+} from './firebase.js?v=20261111b';
 import {
-  GRADE_ORDER, closeModal, getMyStudentData, loadTitleInventoryCache, openModal, showToast
-} from './core.js?v=20261111a';
-import { formatTime } from './level.js?v=20261111a';
-import { renderStudentHome } from './home.js?v=20261111a';
-import { initFrameGrids, loadCustomFrames, renderInventoryDecor } from './frames.js?v=20261111a';
-import { GRADE_POINTS, getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261111a';
+  GRADE_ORDER, closeModal, getMyExchanges, getMyStudentData, loadTitleInventoryCache, openModal, showToast
+} from './core.js?v=20261111b';
+import { formatTime } from './level.js?v=20261111b';
+import { renderStudentHome } from './home.js?v=20261111b';
+import { initFrameGrids, loadCustomFrames, renderInventoryDecor } from './frames.js?v=20261111b';
+import { GRADE_POINTS, getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261111b';
 import {
   AVATAR_CATS, AVATAR_CAT_ICONS, AVATAR_MANNEQUIN, avatarInventory, avatarItemImg, avatarItemList,
   loadAvatarEquipped, loadAvatarInventory, loadAvatarItemList
-} from './avatar.js?v=20261111a';
-import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261111a';
-import { renderStudentSettings } from './profile.js?v=20261111a';
-import { renderMyPoints } from './points.js?v=20261111a';
+} from './avatar.js?v=20261111b';
+import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261111b';
+import { renderStudentSettings } from './profile.js?v=20261111b';
+import { renderMyPoints } from './points.js?v=20261111b';
 
 // ===== 내 보관함: 아바타 탭 =====
 export async function renderInventoryAvatar() {
@@ -537,11 +537,9 @@ window.filterInventoryReward = async function(category, btn) {
   snackList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">불러오는 중...</div>';
   if (stationeryList) stationeryList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">불러오는 중...</div>';
   try {
-    const snap = await getDocs(query(
-      collection(db, 'exchanges'),
-      where('studentId', '==', state.currentUser.uid),
-      where('status', 'in', ['approved', 'used'])
-    ));
+    // (읽기 절약) 실시간으로 받고 있는 내 신청 목록에서 승인/사용된 것만
+    const myEx = (await getMyExchanges()).filter(ex => ['approved', 'used'].includes(ex.status));
+    const snap = { docs: myEx.map(ex => ({ id: ex.id, data: () => ex })) };
     const rewardsSnap = await getDocs(collection(db, 'rewards'));
     const rewardCatMap = {};
     rewardsSnap.docs.forEach(d => {
@@ -599,7 +597,7 @@ let decorShopData = { myPts: 0, ownedIds: new Set(), allInvCounts: {} };
 export async function renderDecorShop() {
   await loadCustomFrames();
   await reloadTitles();
-  window._cachedTitleInventory = null; // 항상 최신 칭호 보유 내역 반영
+  // (읽기 절약) 들어올 때마다 전교생 칭호 보유 기록을 새로 읽지 않음. 내가 칭호를 사면 그때 새로 읽어요.
   // 프레임 탭 기본 활성화
   setTimeout(() => {
     initFrameGrids(false);

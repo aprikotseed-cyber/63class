@@ -1,11 +1,11 @@
 // board.js — 자유게시판
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, arrayUnion, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment,
   limit, orderBy, query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, getCfgTeacher, getMyStudentData, openModal, showToast } from './core.js?v=20261111a';
-import { formatTime } from './level.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, getCfgTeacher, getMyStudentData, openModal, showToast } from './core.js?v=20261111b';
+import { formatTime } from './level.js?v=20261111b';
 
 // ===== 자유게시판 (실명, 글쓰기+댓글) =====
 const BOARD_PAGE_SIZE = 10;   // 한 페이지에 보여줄 글 수
@@ -145,8 +145,12 @@ export async function updateBoardBadge(preFetchedPosts) {
   try {
     let posts = preFetchedPosts;
     if (!posts) {
-      const snap = await getDocs(query(collection(db, 'boardPosts'), orderBy('createdAt', 'desc'), limit(BOARD_MAX_FETCH)));
-      posts = snap.docs.map(d => d.data());
+      // (읽기 절약) 글 전체 대신 ① 가장 최근 글 1개 ② 내가 쓴 글만 읽어서 배지 판단
+      const [latest, mine] = await Promise.all([
+        getDocs(query(collection(db, 'boardPosts'), orderBy('createdAt', 'desc'), limit(1))),
+        getDocs(query(collection(db, 'boardPosts'), where('authorId', '==', state.currentUser.uid))),
+      ]);
+      posts = [...latest.docs, ...mine.docs].map(d => d.data());
     }
     const lastListSeen = await getMyBoardListSeenAt();
     const hasNewPost = posts.some(p => {

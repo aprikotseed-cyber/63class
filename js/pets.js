@@ -1,16 +1,17 @@
 // pets.js — 펫 시스템
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, doc, getDoc, getDocs, increment, query, serverTimestamp, setDoc,
   updateDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, openModal, showToast } from './core.js?v=20261111a';
-import { reloadStudents } from './realtime.js?v=20261111a';
-import { initFrameGrids, renderInventoryDecor } from './frames.js?v=20261111a';
-import { renderInventoryAvatar, renderInventoryTitles } from './inventory.js?v=20261111a';
-import { buildCharHtml } from './avatar.js?v=20261111a';
-import { renderAvatarShop } from './avatar-shop.js?v=20261111a';
-import { fadePanel } from './ui.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, openModal, showToast } from './core.js?v=20261111b';
+import { reloadStudents } from './realtime.js?v=20261111b';
+import { initFrameGrids, renderInventoryDecor } from './frames.js?v=20261111b';
+import { renderInventoryAvatar, renderInventoryTitles } from './inventory.js?v=20261111b';
+import { buildCharHtml } from './avatar.js?v=20261111b';
+import { renderAvatarShop } from './avatar-shop.js?v=20261111b';
+import { fadePanel } from './ui.js?v=20261111b';
+import { renderExchanges } from './exchanges.js?v=20261111b';
 
 // ===== 🐾 펫 시스템 =====
 let petEquipped = null;   // 현재 착용한 펫 ID
@@ -214,7 +215,6 @@ window.switchInventoryTab = function(tab, btn) {
     const el = document.getElementById(`inventoryTab${t.charAt(0).toUpperCase()+t.slice(1)}`);
     if (el) { el.style.display=t===tab?'':'none'; if(t===tab) fadePanel(el); }
   });
-  if (tab==='reward') renderInventoryRewards?.();
   if (tab==='title') renderInventoryTitles?.();
   if (tab==='decor') renderInventoryDecor?.();
   if (tab==='avatar') renderInventoryAvatar?.();
@@ -482,6 +482,7 @@ window.petBuy = async function(petId) {
 };
 
 // 학생: 펫 보관함 렌더 (아바타 보관함과 동일한 인터페이스)
+window.renderInventoryPet = renderInventoryPet; // 펫 해제 버튼에서 호출
 export async function renderInventoryPet() {
   const wrap = document.getElementById('inventoryPetContent');
   if (!wrap) return;
@@ -571,6 +572,7 @@ window.approveExchange = async function(exId) {
   if (!snap.exists()) return showToast('신청 내역을 찾을 수 없어요');
   const ex = snap.data();
   if (ex.type === 'pet') {
+    if (ex.status && ex.status !== 'pending') return showToast('이미 처리된 신청이에요');
     await setDoc(doc(db,'petInventory',`${ex.studentId}_${ex.rewardId}`), {
       studentId:ex.studentId, petId:ex.rewardId, petName:ex.rewardName,
       obtainedAt:serverTimestamp()
@@ -581,7 +583,7 @@ window.approveExchange = async function(exId) {
       rewardName:ex.rewardName, createdAt:serverTimestamp(), read:false
     });
     showToast(`${ex.studentName} 펫 구매 승인 ✅`);
-    renderExchangeList?.();
+    renderExchanges();
     return;
   }
 };

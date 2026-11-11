@@ -1,6 +1,6 @@
 // core.js — 전역 상태·상수, 설정 캐시, 공통 유틸(토스트·모달)
-import { state } from './state.js?v=20261111a';
-import { collection, db, doc, getDoc, getDocs } from './firebase.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
+import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261111b';
 
 // ===== 전역 상태 =====
 // (여러 파일이 함께 쓰는 상태는 state.js 에 있어요)
@@ -14,18 +14,8 @@ export function getRankIdx(val) {
 }
 export const GRADE_LABELS = { absolute:'🔱 절대신', special:'✨ 특별', legend:'🌟 전설', epic:'🔥 영웅', rare:'💙 희귀', normal:'⬜ 일반' };
 export const GRADE_ORDER  = { normal:0, rare:1, epic:2, legend:3, special:4, absolute:5 };
-const GRADE_BG     = {
-  normal:  'linear-gradient(135deg,#e0d4f7,#c8b4f0)',
-  rare:    'linear-gradient(135deg,#bfdbfe,#93c5fd)',
-  epic:    'linear-gradient(135deg,#fde68a,#fbbf24)',
-  legend:  'linear-gradient(135deg,#fca5a5,#f87171)',
-  special: 'linear-gradient(135deg,#6ee7f7,#38bdf8)',
-};
-
 // ===== Config 캐시 (세션 중 1회만 읽음) =====
 let _cfgSite    = null;
-let _cachedRewards = null;
-
 // 현재 로그인 학생 데이터 캐시에서 가져오기
 export function getMyStudentData() {
   return state.students.find(s => s.id === state.currentUser?.uid) || {};
@@ -46,6 +36,15 @@ export async function loadTitleDeletedCache() {
 }
 export async function getCfgSite()    { if (!_cfgSite)    { const d = await getDoc(doc(db,'config','site'));    _cfgSite    = d.exists()?d.data():{}; } return _cfgSite; }
 export async function getCfgTeacher() { if (!state._cfgTeacher) { const d = await getDoc(doc(db,'config','teacher')); state._cfgTeacher = d.exists()?d.data():{}; } return state._cfgTeacher; }
+
+// 내 교환 신청 목록. 학생은 로그인 때부터 실시간으로 받고 있으므로 그것을 그대로 쓰고(읽기 0),
+// 아직 안 받았거나(교사의 학생 뷰 등) 다른 사람이면 서버에서 읽어요.
+export async function getMyExchanges() {
+  const uid = state.currentUser?.uid;
+  if (uid && window._myExchangesReadyUid === uid) return state.exchanges.filter(e => e.studentId === uid);
+  const snap = await getDocs(query(collection(db, 'exchanges'), where('studentId', '==', uid)));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
 
 // ===== 유틸 =====
 export function showToast(msg, ms = 2500) {

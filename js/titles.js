@@ -1,20 +1,20 @@
 // titles.js — 칭호 시스템 (목록·관리·회수·선물·장착)
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, limit,
   orderBy, query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111a';
+} from './firebase.js?v=20261111b';
 import {
   GRADE_LABELS, GRADE_ORDER, closeModal, getMyStudentData, loadTitleDeletedCache,
   loadTitleInventoryCache, openModal, showToast
-} from './core.js?v=20261111a';
-import { checkAndGrantRankUp } from './level.js?v=20261111a';
-import { reloadStudents } from './realtime.js?v=20261111a';
-import { renderDashboard } from './dashboard.js?v=20261111a';
-import { initFrameGrids, loadCustomFrames, renderFrameGrid } from './frames.js?v=20261111a';
-import { buildCharHtml, renderAvatarManage } from './avatar.js?v=20261111a';
-import { renderStudentSettings } from './profile.js?v=20261111a';
-import { renderPetManageGrid } from './pets.js?v=20261111a';
+} from './core.js?v=20261111b';
+import { checkAndGrantRankUp } from './level.js?v=20261111b';
+import { reloadStudents } from './realtime.js?v=20261111b';
+import { renderDashboard } from './dashboard.js?v=20261111b';
+import { initFrameGrids, loadCustomFrames, renderFrameGrid } from './frames.js?v=20261111b';
+import { buildCharHtml, renderAvatarManage } from './avatar.js?v=20261111b';
+import { renderStudentSettings } from './profile.js?v=20261111b';
+import { renderPetManageGrid } from './pets.js?v=20261111b';
 
 export async function renderTitlesPage() {
   const isTeacher = state.currentUser?.role === 'teacher';
@@ -75,86 +75,6 @@ export async function renderTitlesPage() {
     html += '</div>';
   }
   grid.innerHTML = html;
-}
-
-// ===== 학생: 칭호 목록 =====
-async function renderStudentTitles() {
-  await reloadTitles();
-  const container = document.getElementById('titlePageContent');
-  if (!container) return;
-  container.innerHTML = '<div id="studentTitleGrid" class="title-card-grid"></div>';
-  const grid = document.getElementById('studentTitleGrid');
-
-  // 내 보유 칭호 ID 목록
-  const invSnap = await getDocs(query(
-    collection(db, 'titleInventory'),
-    where('studentId', '==', state.currentUser.uid)
-  ));
-  const ownedTitleIds = new Set(invSnap.docs.map(d => d.data().titleId));
-
-  // 전체 인벤토리 - 하사받은 학생 수 계산 (삭제한 학생도 포함)
-  const allInvSnap = { docs: (await loadTitleInventoryCache()).map(d => ({ id: d.id, data: () => d })) };
-  const allDelSnap = { docs: (await loadTitleDeletedCache()).map(d => ({ data: () => d })) };
-  const invCounts = {};
-  allInvSnap.docs.forEach(d => {
-    const tid = d.data().titleId;
-    if (tid) invCounts[tid] = (invCounts[tid] || 0) + 1;
-  });
-  // 삭제된 칭호도 카운트에 포함
-  allDelSnap.docs.forEach(d => {
-    const tid = d.data().titleId;
-    if (tid) invCounts[tid] = (invCounts[tid] || 0) + 1;
-  });
-
-  // 등급 낮은→높은 순, 동등 등급 내 가나다순
-  const sorted = [...titles].sort((a, b) => {
-    const gDiff = (GRADE_ORDER[a.grade]||0) - (GRADE_ORDER[b.grade]||0);
-    if (gDiff !== 0) return gDiff;
-    return (a.name||'').localeCompare(b.name||'', 'ko');
-  });
-
-  const gradeBg = {
-    absolute:'linear-gradient(135deg,rgba(250,204,21,0.14),rgba(244,114,182,0.12),rgba(56,189,248,0.12))',
-    special: 'linear-gradient(135deg,rgba(245,158,11,0.08),rgba(139,92,246,0.08))',
-    legend:  'linear-gradient(135deg,rgba(217,119,6,0.1),rgba(253,211,77,0.08))',
-    epic:    'linear-gradient(135deg,rgba(139,92,246,0.08),rgba(236,72,153,0.06))',
-    rare:    'linear-gradient(135deg,rgba(2,132,199,0.08),rgba(125,211,252,0.06))',
-    normal:  'var(--surface)'
-  };
-
-  if (!sorted.length) {
-    grid.innerHTML = '<div class="empty-state" style="padding:60px;"><div class="empty-icon">🏅</div><h3>등록된 칭호가 없어요</h3></div>';
-    return;
-  }
-
-  const gradeOrder2 = ['normal','rare','epic','legend','special','absolute'];
-  const gradeGroups = gradeOrder2;
-
-  grid.innerHTML = gradeGroups.map(grade => {
-    const group = sorted.filter(t => t.grade === grade);
-    if (!group.length) return '';
-    const cards = group.map(t => {
-      const bg = gradeBg[t.grade] || 'var(--surface)';
-      const owned = ownedTitleIds.has(t.id);
-      const count = invCounts[t.id] || 0;
-      const cardClass = owned ? 'title-card title-card-owned' : 'title-card title-card-unowned';
-      return `
-    <div class="${cardClass}" style="background:${bg};">
-      <div class="title-card-badge-wrap">
-        ${getTitleBadgeHtml(t.grade, t.bgColor, t.textColor, t.emoji, t.name, 'font-size:14px;padding:6px 16px;')}
-      </div>
-      <div class="title-card-name">${t.name}</div>
-      <div class="title-card-desc">${t.desc || '설명 없음'}</div>
-      <div style="font-size:15px;font-weight:800;color:var(--primary);text-align:center;margin-bottom:4px;">+${t.gold ?? GRADE_POINTS[t.grade] ?? 200}🪙</div>
-      <div style="height:8px;"></div>
-      ${makeAbilityTags(t.abilities, false)}
-      <div class="title-card-count">선생님께 하사받은 학생 ${count}명</div>
-      ${owned ? '<div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-top:auto;">✅ 소지 중</div>' : '<div style="height:20px;margin-top:auto;"></div>'}
-    </div>`;
-    }).join('');
-    return `<div class="section-grade-header">${GRADE_LABELS[grade]}</div>
-    <div class="title-grade-grid">${cards}</div>`;
-  }).join('');
 }
 
 // 능력치 태그 HTML 생성 - 항상 고정 높이 박스로 감싸서 레이아웃 통일

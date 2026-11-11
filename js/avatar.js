@@ -1,17 +1,16 @@
 // avatar.js — 아바타 시스템 (데이터·교사 관리)
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   collection, db, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, openModal, showToast } from './core.js?v=20261111a';
-import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, openModal, showToast } from './core.js?v=20261111b';
+import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261111b';
 
 // ===================================================
 // 🧑 아바타 시스템 v4 (Firestore 목록 + GitHub 이미지)
 // ===================================================
 
 const AVATAR_GITHUB_RAW = 'https://raw.githubusercontent.com/aprikotseed-cyber/63class/main/avatar'; // 아바타 파츠는 Firestore URL 사용
-const IMGBB_API_KEY = '11d7d7447c5c90b8aa1e55c10f7c8216';
 export const AVATAR_CATS = {
   hair:'헤어', face:'얼굴', cap:'모자', top:'상의(전신)', shoe:'신발', weapon:'무기'
 };
@@ -27,11 +26,6 @@ export function avatarItemImg(category, itemId, ext) {
   if (item?.thumb) return item.thumb;
   // layerUrl 없으면 마네킹(빈 슬롯) 표시
   return AVATAR_MANNEQUIN;
-}
-
-// item 객체에서 URL 결정 (ext 필드 있으면 사용)
-function avatarItemImgFromItem(item) {
-  return avatarItemImg(item.category, item.itemId, item.ext);
 }
 
 // 학생 캐릭터 URL 결정:
@@ -82,9 +76,6 @@ export function buildCharHtml(s, style = '') {
     ${layers}
   </div>`;
 }
-
-const AVATAR_DEFAULT_MALE   = 'https://i.ibb.co/TMcWFtGr/image.png';
-const AVATAR_DEFAULT_FEMALE = 'https://i.ibb.co/TMcWFtGr/image.png';
 
 // 꾸미기 상점 미리보기용 마네킹 (성별 무관, 아무것도 입혀지지 않은 베이스)
 // 마네킹 이미지 미리 로드 (캐싱)

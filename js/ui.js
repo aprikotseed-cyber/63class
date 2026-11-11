@@ -1,5 +1,5 @@
 // ui.js — 화면 공통 (탭 페이드, 사이드바, 로딩)
-import { db, doc, getDoc, setDoc } from './firebase.js?v=20261111a';
+import { db, doc, getDoc, setDoc } from './firebase.js?v=20261111b';
 
 // ===== 탭 패널 페이드 헬퍼 =====
 export function fadePanel(el) {

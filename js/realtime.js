@@ -1,33 +1,24 @@
 // realtime.js — 교사 데이터 로드, 알림 큐, Firestore 실시간 리스너
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   collection, db, doc, getDocs, limit, onSnapshot, orderBy, query, updateDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, openModal, showToast } from './core.js?v=20261111a';
-import { renderShopPage } from './shop.js?v=20261111a';
-import { renderDashboard } from './dashboard.js?v=20261111a';
-import { renderStudentList } from './students.js?v=20261111a';
-import { renderExchanges, renderStudentPendingExchanges } from './exchanges.js?v=20261111a';
-import { renderMessages } from './messages.js?v=20261111a';
-import { renderStudentHome, renderTeacherHome } from './home.js?v=20261111a';
-import { renderInventoryDecor } from './frames.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, openModal, showToast } from './core.js?v=20261111b';
+import { renderShopPage } from './shop.js?v=20261111b';
+import { renderDashboard } from './dashboard.js?v=20261111b';
+import { renderStudentList } from './students.js?v=20261111b';
+import { renderExchanges, renderStudentPendingExchanges } from './exchanges.js?v=20261111b';
+import { renderMessages } from './messages.js?v=20261111b';
+import { renderStudentHome, renderTeacherHome } from './home.js?v=20261111b';
+import { renderInventoryDecor } from './frames.js?v=20261111b';
 import {
   inventoryRewardCategory, renderDecorShop, renderInventoryAvatar, renderInventoryTitles
-} from './inventory.js?v=20261111a';
-import { renderStudentSettings } from './profile.js?v=20261111a';
-import { renderMyPoints } from './points.js?v=20261111a';
-import { renderInventoryPet } from './pets.js?v=20261111a';
+} from './inventory.js?v=20261111b';
+import { renderStudentSettings } from './profile.js?v=20261111b';
+import { renderMyPoints } from './points.js?v=20261111b';
+import { renderInventoryPet } from './pets.js?v=20261111b';
 
-// ===== 데이터 로드 (교사 초기 1회) =====
-// students / exchanges / rewards 는 onSnapshot 리스너가 실시간으로 채워줌.
-// 리스너 콜백이 도착하기 전 첫 render에 빈 배열이 보이는 것을 막기 위해
-// 앱 진입 시 한 번만 동기 로드.
-async function loadTeacherData() {
-  // onSnapshot 리스너(listenStudents, listenExchanges, listenRewards)가
-  // 첫 fire 시 전체 데이터를 채워주므로 별도 getDocs 불필요
-  // 뱃지는 listenExchanges 콜백에서 자동 업데이트됨
-}
-
+// ===== 데이터 로드 =====
 // reloadStudents / reloadRewards / reloadExchanges는
 // onSnapshot 리스너가 자동 갱신하므로 더 이상 getDocs를 호출하지 않음.
 // 기존 호출 코드와의 호환성을 위해 빈 함수로 유지.
@@ -40,10 +31,6 @@ export async function reloadRewards() {
   state.rewards = window._cachedRewards;
   window._cachedRewards = null; // 캐시 무효화
 }
-async function reloadExchanges() {
-  // exchanges 뱃지는 listenExchanges 콜백이 처리하므로 여기서는 아무것도 안 함
-}
-
 // ===== 알림 큐 시스템 =====
 const notifQueue = [];
 let notifShowing = false;

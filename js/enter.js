@@ -1,20 +1,20 @@
 // enter.js — 로그인 후 앱 진입, 대기 중 알림 확인, 로그아웃
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   auth, collection, db, deleteDoc, doc, getDocs, onSnapshot, query, signOut, updateDoc, where
-} from './firebase.js?v=20261111a';
-import { getCfgTeacher, getMyStudentData } from './core.js?v=20261111a';
-import { resetAutoLogoutTimer } from './auth.js?v=20261111a';
-import { loadSiteSettings } from './site-config.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { getCfgTeacher, getMyStudentData } from './core.js?v=20261111b';
+import { resetAutoLogoutTimer } from './auth.js?v=20261111b';
+import { loadSiteSettings } from './site-config.js?v=20261111b';
 import {
   listenExchanges, listenMessages, listenRewards, listenStudents, pushNotif
-} from './realtime.js?v=20261111a';
-import { renderStudentPendingExchanges } from './exchanges.js?v=20261111a';
-import { loadAttendPoint } from './attendance.js?v=20261111a';
-import { checkMissedRoles } from './roles.js?v=20261111a';
-import { escapeHtml } from './board.js?v=20261111a';
-import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261111a';
-import { initStudentAvatar } from './avatar.js?v=20261111a';
+} from './realtime.js?v=20261111b';
+import { renderStudentPendingExchanges } from './exchanges.js?v=20261111b';
+import { loadAttendPoint } from './attendance.js?v=20261111b';
+import { checkMissedRoles } from './roles.js?v=20261111b';
+import { escapeHtml } from './board.js?v=20261111b';
+import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261111b';
+import { initStudentAvatar } from './avatar.js?v=20261111b';
 
 // ===== 앱 진입 =====
 export async function enterApp() {
@@ -148,6 +148,7 @@ export async function enterApp() {
         const myExchanges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         // 기존 exchanges에서 내 것 제거 후 최신으로 교체
         state.exchanges = [...state.exchanges.filter(e => e.studentId !== state.currentUser.uid), ...myExchanges];
+        window._myExchangesReadyUid = state.currentUser.uid; // 상점·보관함이 이 실시간 데이터를 바로 쓰도록 표시
         renderStudentPendingExchanges();
       }
     );
@@ -176,22 +177,10 @@ async function checkPendingNotifs() {
       teacherEmoji = _tc.charUrl || _tc.avatarEmoji || '👩‍🏫';
     } catch(e) {}
 
-    // givenCards 캐시 사용
-    if (!window._myGivenCards) {
-      const _cs = await getDocs(query(collection(db, 'givenCards'), where('studentId', '==', uid)));
-      window._myGivenCards = _cs.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
-    const newCards = window._myGivenCards
-      .filter(c => (c.givenAt?.seconds || 0) * 1000 > lastCheckTime)
-      .sort((a, b) => (a.givenAt?.seconds || 0) - (b.givenAt?.seconds || 0));
-
-    // history 캐시 사용 (revoke만 필터)
-    if (!window._myHistory) {
-      const _hs = await getDocs(query(collection(db, 'history'), where('studentId', '==', uid)));
-      window._myHistory = _hs.docs.map(d => d.data());
-    }
-    const newRevokes = window._myHistory
-      .filter(h => h.source === 'revoke' && (h.createdAt?.seconds || 0) * 1000 > lastCheckTime)
+    // (읽기 절약) 내 포인트 내역 전체가 아니라 '카드 회수' 기록만 조회 (같다(==) 조건 2개라 색인 불필요)
+    const _hs = await getDocs(query(collection(db, 'history'), where('studentId', '==', uid), where('source', '==', 'revoke')));
+    const newRevokes = _hs.docs.map(d => d.data())
+      .filter(h => (h.createdAt?.seconds || 0) * 1000 > lastCheckTime)
       .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
 
     // titleInventory 캐시 사용
@@ -362,7 +351,6 @@ window.logout = async function() {
   if (state.unsubStudents)  state.unsubStudents();
   if (state.unsubExchanges) state.unsubExchanges();
   if (state.unsubRewards)   state.unsubRewards();
-  if (typeof unsubPointNotif !== 'undefined' && unsubPointNotif) unsubPointNotif();
   state.unsubMessages = null; state.unsubStudents = null; state.unsubExchanges = null; state.unsubRewards = null;
   await signOut(auth);
   state.currentUser = null;

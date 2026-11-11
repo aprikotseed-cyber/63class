@@ -1666,3 +1666,24 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
 .read-status { font-size: 11px; margin-top: 3px; }
 .read-status.read { color: #4ecdc4; }
 .read-status.unread { color: var(--text-muted); }
+
+/* ===== 휴대폰 화면 정리 ===== */
+/* 좁은 화면에서 나란히 놓인 칸을 위아래로 쌓기 (m-stack: 1칸, m-stack2: 2칸) */
+@media (max-width: 640px) {
+  .m-stack { grid-template-columns: 1fr !important; }
+  .m-stack2 { grid-template-columns: 1fr 1fr !important; }
+}
+/* 맨 위 막대: 글자가 두 줄로 깨지지 않게 */
+.nav-title, #navName, .navbar .btn { white-space: nowrap; }
+.nav-left { min-width: 0; }
+.nav-title { overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 768px) {
+  #navName { display: none; }
+}
+/* 제목 옆 버튼(글쓰기 등)이 두 줄로 깨지지 않게 */
+.section-header .btn { white-space: nowrap; }
+/* 보관함·꾸미기 상점 상단 탭: 글자 줄바꿈 방지 */
+.decor-top-tab { white-space: nowrap; }
+@media (max-width: 640px) {
+  .decor-top-tab { padding-left: 6px !important; padding-right: 6px !important; font-size: 12px !important; }
+}

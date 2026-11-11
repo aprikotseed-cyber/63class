@@ -1,15 +1,15 @@
 // dungeon.js — 챌린지 던전 (학생: 로비·전투·단체 던전)
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment,
   serverTimestamp, updateDoc
-} from './firebase.js?v=20261111a';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111a';
-import { getTodayStr } from './attendance.js?v=20261111a';
-import { loadRoles, roles } from './roles.js?v=20261111a';
-import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261111a';
-import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261111a';
-import { buildCharHtml, getStudentChar } from './avatar.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111b';
+import { getTodayStr } from './attendance.js?v=20261111b';
+import { loadRoles, roles } from './roles.js?v=20261111b';
+import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261111b';
+import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261111b';
+import { buildCharHtml, getStudentChar } from './avatar.js?v=20261111b';
 
 // ===== ⚔️ 챌린지 던전 =====
 window.startDungeonChallenge = async function() {
@@ -126,7 +126,7 @@ window.renderDungeonLobby = async function() {
     onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(139,92,246,0.2)'"
     onmouseleave="this.style.transform='';this.style.boxShadow='none'">
       <div style="font-size:17px;font-weight:800;color:#5b21b6;margin-bottom:12px;">📜 던전 규칙 안내</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="m-stack" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
         <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:12px;">
           <div style="font-size:15px;font-weight:700;color:#6d28d9;margin-bottom:6px;">🗡️ 개인 던전</div>
           <div style="font-size:13px;color:#4c1d95;line-height:1.7;">
@@ -169,7 +169,7 @@ window.renderDungeonLobby = async function() {
     </div>
 
     <!-- 2줄: 던전 선택 버튼 4개 -->
-    <div class="dungeon-tabs" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div class="dungeon-tabs m-stack2" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
       <div class="dungeon-tab ${!soloPlayed?'active':''}" style="${soloPlayed?'opacity:0.55;cursor:not-allowed;pointer-events:none;':'cursor:pointer;'}" ${soloPlayed?'':'onclick="startDungeonSolo()"'}>
         <span class="dungeon-tab-icon">🗡️</span>
         <strong>개인 던전</strong>
@@ -199,7 +199,7 @@ window.renderDungeonLobby = async function() {
 
   // 현황 블록 별도 추가
   lobby.innerHTML += `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;">
+    <div class="m-stack" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;">
       <div class="card" style="padding:16px;box-sizing:border-box;display:flex;flex-direction:column;height:100%;">
         <div style="font-size:16px;font-weight:700;margin-bottom:12px;">🐉 단체 던전 현황</div>
         <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:300px;">

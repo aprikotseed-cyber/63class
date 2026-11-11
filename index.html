@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261111a">
+<link rel="stylesheet" href="css/style.css?v=20261111b">
 </head>
 <body>
 
@@ -378,7 +378,7 @@
             <div id="crowdfundingList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:12px;"></div>
           </div>
           <!-- 기존 3개 코너 -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">
+          <div class="m-stack" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">
             <div>
               <div class="reward-column-header">학습 코너 🛒</div>
               <div class="reward-list" id="rewardList-study"></div>
@@ -720,7 +720,7 @@
         </div>
         <!-- 보상 탭 -->
         <div id="inventoryTabReward">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:12px;">
+          <div class="m-stack" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:12px;">
             <div>
               <div class="reward-column-header" style="display:flex;align-items:center;justify-content:space-between;">
                 <span>학습 코너 🛒</span>
@@ -907,7 +907,7 @@
       <!-- ===== 학생: 내 포인트 ===== -->
       <section id="page-myPoints" class="hidden">
         <!-- 레이아웃: 왼쪽(프로필+경험치/포인트/골드) / 오른쪽(능력치) -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;">
+        <div class="m-stack" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;">
 
           <!-- 왼쪽: 프로필 + 경험치/포인트/골드 -->
           <div style="display:flex;flex-direction:column;gap:10px;height:100%;">
@@ -938,7 +938,7 @@
           </div>
 
           <!-- 오른쪽: 능력치 레이더 + 바 -->
-          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;">
+          <div class="m-stack" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;">
             <!-- 레이더 -->
             <div class="card" style="padding:16px;display:flex;flex-direction:column;align-items:center;">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;align-self:flex-start;">
@@ -1529,7 +1529,7 @@
       </div>
       <div class="form-group">
         <label>등급</label>
-        <select id="titleGrade" onchange="onTitleGradeChange()">
+        <select id="titleGrade">
           <option value="normal">일반</option>
           <option value="rare">희귀</option>
           <option value="epic">영웅</option>
@@ -1540,18 +1540,18 @@
       </div>
       <div class="form-group" id="titleImgUrlGroup" style="display:none;">
         <label>칭호 이미지 주소 (투명 배경 PNG)</label>
-        <input type="text" id="titleImgUrl" placeholder="https://raw.githubusercontent.com/.../title.png" oninput="updateTitlePreview()" />
+        <input type="text" id="titleImgUrl" placeholder="https://raw.githubusercontent.com/.../title.png" />
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">직접 만든 칭호 이미지 주소를 붙여넣으세요. 가로로 긴 PNG를 권장하고, 반짝임 효과는 자동으로 적용돼요.</div>
       </div>
       <!-- 일반 등급 색상 선택 -->
       <div id="titleColorPicker" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:6px;">
           <label style="font-size:13px;font-weight:600;margin:0;">배경색</label>
-          <input type="color" id="titleBgColor" value="#f8fafc" oninput="updateTitlePreview()" style="width:40px;height:32px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;" />
+          <input type="color" id="titleBgColor" value="#f8fafc" style="width:40px;height:32px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;" />
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
           <label style="font-size:13px;font-weight:600;margin:0;">글자색</label>
-          <input type="color" id="titleTextColor" value="#334155" oninput="updateTitlePreview()" style="width:40px;height:32px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;" />
+          <input type="color" id="titleTextColor" value="#334155" style="width:40px;height:32px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;" />
         </div>
 
       </div>
@@ -2487,26 +2487,6 @@
 </div>
 
 <!-- 하위 탭 추가 모달 -->
-<div class="modal-overlay hidden" id="addSubTabModal">
-  <div class="modal" style="max-width:380px;">
-    <div class="modal-title" id="addSubTabTitle">하위 탭 추가</div>
-    <div class="login-form">
-      <div class="form-group">
-        <label>이모지</label>
-        <input type="text" id="subTabEmoji" placeholder="예: 📚" maxlength="2" />
-      </div>
-      <div class="form-group">
-        <label>탭 이름</label>
-        <input type="text" id="subTabName" placeholder="예: 수업, 학습 태도, 바른 인성" />
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('addSubTabModal')">취소</button>
-      <button class="btn btn-primary" onclick="saveSubTab()">등록</button>
-    </div>
-  </div>
-</div>
-
 <!-- 카드 추가/수정 모달 (교사) -->
 <!-- ===== 1인1역: 역할 추가/수정 모달 ===== -->
 <div class="modal-overlay hidden" id="addRoleModal">
@@ -3206,7 +3186,7 @@
 <!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
-<script type="module" src="js/app.js?v=20261111a"></script>
+<script type="module" src="js/app.js?v=20261111b"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
 </html>

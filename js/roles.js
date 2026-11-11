@@ -1,21 +1,20 @@
 // roles.js — 1인1역 시스템
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, increment, limit, onSnapshot, orderBy,
   query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, openModal, showToast } from './core.js?v=20261111a';
-import { formatTime } from './level.js?v=20261111a';
-import { reloadStudents } from './realtime.js?v=20261111a';
-import { renderDashboard } from './dashboard.js?v=20261111a';
-import { getTodayStr } from './attendance.js?v=20261111a';
-import { buildStudentAuctionHtml } from './role-auction.js?v=20261111a';
-import { getCurrentWeekKey } from './books.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, openModal, showToast } from './core.js?v=20261111b';
+import { formatTime } from './level.js?v=20261111b';
+import { reloadStudents } from './realtime.js?v=20261111b';
+import { renderDashboard } from './dashboard.js?v=20261111b';
+import { getTodayStr } from './attendance.js?v=20261111b';
+import { buildStudentAuctionHtml } from './role-auction.js?v=20261111b';
+import { getCurrentWeekKey } from './books.js?v=20261111b';
 
 // ===== 1인1역 시스템 =====
 export const DAY_NAMES = ['','월','화','수','목','금','토','일'];
 export let roles = [];
-let _roleCurrentTab = 'roles';
 let _pendingRoleSubmit = null; // { roleId, roleName, roleEmoji }
 let _editingRoleId = null;
 
@@ -175,14 +174,16 @@ window.openRoleRewardModal = async function(weekKeyOverride) {
       } catch(e) { lastGrantEl.textContent = ''; }
     }
     // 해당 주 승인된 수행 로그
-    const logSnap = await getDocs(query(collection(db,'roleLogs'), where('status','in',['approved','done','absent','holiday'])));
+    // (읽기 절약) 학기 전체가 아니라 해당 주 날짜 범위만 조회하고, 상태는 여기서 거름
+    const logSnap = await getDocs(query(collection(db,'roleLogs'), where('date','>=',dates[0]), where('date','<=',dates[dates.length-1])));
     const approvedLogSet = new Set();
     logSnap.docs.forEach(d => {
       const data = d.data();
-      if (dates.includes(data.date)) approvedLogSet.add(`${data.studentId}_${data.roleId}_${data.date}`);
+      if (['approved','done','absent','holiday'].includes(data.status) && dates.includes(data.date)) approvedLogSet.add(`${data.studentId}_${data.roleId}_${data.date}`);
     });
     // 이 주차에 이미 지급된 학생 확인 (중복 지급 방지, 클라이언트 필터로 인덱스 불필요)
-    const historySnap = await getDocs(query(collection(db,'history'), where('source','==','roleWeeklyReward')));
+    // (읽기 절약) 해당 주차 지급 기록만 조회 (같다(==) 조건만 2개라 별도 색인 필요 없음)
+    const historySnap = await getDocs(query(collection(db,'history'), where('source','==','roleWeeklyReward'), where('weekKey','==',weekKey)));
     const alreadyGivenSet = new Set();
     historySnap.docs.forEach(d => {
       const data = d.data();
@@ -401,116 +402,6 @@ export async function checkMissedRoles() {
   return;
 }
 
-// ─── 교사: 역할 목록 탭 ───
-async function renderRoleListTab() {
-  const el = document.getElementById('roleManageContent');
-  await loadRoles();
-  if (!roles.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>등록된 역할이 없어요</h3><p>+ 역할 추가 버튼으로 첫 역할을 만들어 보세요</p></div>`;
-    return;
-  }
-  el.innerHTML = `<div class="role-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
-    ${roles.map(r => {
-      const dayChips = [1,2,3,4,5].map(d => `<span class="role-day-chip ${(r.days||[]).includes(d)?'active':''}">${DAY_NAMES[d]}</span>`).join('');
-      const studentChips = (r.students||[]).map(sid => {
-        const s = state.students.find(x=>x.id===sid);
-        return s ? `<span class="role-student-chip">${s.number||''}번 ${s.name}</span>` : '';
-      }).join('');
-      const bonusChip = r.bonusPoint > 0
-        ? `<span style="font-size:11px;font-weight:700;color:#a16207;background:#fef9c3;padding:1px 7px;border-radius:6px;margin-left:6px;vertical-align:middle;">+${r.bonusPoint}🪙</span>`
-        : '';
-      return `<div class="role-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div style="font-size:16px;font-weight:700;">${r.emoji||'📋'} ${r.name}${bonusChip}</div>
-          <div style="display:flex;gap:6px;">
-            <span onclick="openEditRoleModal('${r.id}')" style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:600;">수정</span>
-            <span onclick="deleteRole('${r.id}','${r.name}')" style="font-size:12px;color:#ef4444;cursor:pointer;font-weight:600;">삭제</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:4px;margin-bottom:10px;">${dayChips}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;">${studentChips||'<span style="font-size:12px;color:var(--text-muted);">배정된 학생 없음</span>'}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-// ─── 교사: 수행 요청 탭 ───
-async function renderRoleRequestsTab() {
-  const el = document.getElementById('roleManageContent');
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">불러오는 중...</div>';
-  const snap = await getDocs(query(collection(db,'roleLogs'), where('status','==','pending')));
-  const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  // 뱃지 업데이트
-  const badge = document.getElementById('roleRequestBadge');
-  if (badge) {
-    badge.textContent = items.length;
-    badge.style.display = items.length > 0 ? 'flex' : 'none';
-  }
-  const roleBadge = document.getElementById('roleBadge');
-  if (roleBadge) {
-    roleBadge.textContent = items.length;
-    roleBadge.classList.toggle('hidden', items.length === 0);
-  }
-  if (!items.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><h3>대기 중인 수행 요청이 없어요</h3></div>`;
-    return;
-  }
-  el.innerHTML = items.map(item => {
-    const d = item.createdAt?.toDate();
-    const dateStr = d ? `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : '';
-    return `<div class="role-request-item">
-      <span style="font-size:22px;">${item.roleEmoji||'📋'}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;">${item.studentName} · ${item.roleName}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${item.date} · ${dateStr}</div>
-      </div>
-      <div style="display:flex;gap:6px;">
-        <button onclick="approveRoleLog('${item.id}')" class="btn btn-primary" style="font-size:12px;padding:5px 12px;">승인</button>
-        <button onclick="rejectRoleLog('${item.id}')" class="btn btn-secondary" style="font-size:12px;padding:5px 12px;">반려</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ─── 교사: 오늘 현황 탭 ───
-async function renderRoleTodayTab() {
-  const el = document.getElementById('roleManageContent');
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">불러오는 중...</div>';
-  const todayStr = getTodayStr();
-  const todayDow = new Date().getDay();
-  await loadRoles();
-  const todayRoles = roles.filter(r => (r.days||[]).includes(todayDow));
-  if (!todayRoles.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">😴</div><h3>오늘 수행할 역할이 없어요</h3></div>`;
-    return;
-  }
-  const logSnap = await getDocs(query(collection(db,'roleLogs'), where('date','==',todayStr)));
-  const logMap = {};
-  logSnap.docs.forEach(d => {
-    const data = d.data();
-    logMap[`${data.studentId}_${data.roleId}`] = data.status;
-  });
-  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px;">
-    ${todayRoles.map(r => {
-      const rows = (r.students||[]).map(sid => {
-        const s = state.students.find(x=>x.id===sid);
-        if (!s) return '';
-        const status = logMap[`${sid}_${r.id}`] || 'none';
-        const tag = status==='approved'?`<span class="role-tag approved">✅ 완료</span>`
-          : status==='pending'?`<span class="role-tag pending">⏳ 대기</span>`
-          : `<span class="role-tag none">— 미수행</span>`;
-        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px;">
-          <span style="font-size:13px;font-weight:600;">${s.number||''}번 ${s.name}</span>${tag}
-        </div>`;
-      }).join('');
-      return `<div class="role-card">
-        <div style="font-size:15px;font-weight:700;margin-bottom:10px;">${r.emoji||'📋'} ${r.name}</div>
-        <div style="display:flex;flex-direction:column;gap:6px;">${rows}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
 export async function renderRoleManagePage() {
   window._cachedRoles = null;
   await checkMissedRoles();
@@ -523,9 +414,11 @@ export async function renderRoleManagePage() {
 
   // 수행 요청 실시간 리스너 등록 (페이지 진입 시마다 갱신)
   if (window._unsubRoleLogs) window._unsubRoleLogs();
+  let _firstPendingSnap = true; // 첫 신호는 바로 아래에서 직접 그리므로 건너뜀 (중복 렌더·중복 읽기 방지)
   window._unsubRoleLogs = onSnapshot(
     query(collection(db,'roleLogs'), where('status','==','pending')),
     () => {
+      if (_firstPendingSnap) { _firstPendingSnap = false; return; }
       // 현재 roleManage 페이지가 열려있을 때만 갱신
       const page = document.querySelector('.section-title');
       if (document.getElementById('page-roleManage') && !document.getElementById('page-roleManage').classList.contains('hidden')) {
@@ -611,8 +504,8 @@ async function _renderRoleManageContent() {
   const { dates: weekDates, monStr, friStr } = getThisWeekRange();
   const weekRangeStr = `${monStr} ~ ${friStr}`;
 
-  // 이번 주 전체 roleLogs 조회
-  const weekLogSnap = await getDocs(collection(db, 'roleLogs'));
+  // 이번 주 roleLogs만 조회 (읽기 절약: 학기 전체 → 이번 주)
+  const weekLogSnap = await getDocs(query(collection(db, 'roleLogs'), where('date','>=',monStr), where('date','<=',friStr)));
   // 이번 주 날짜에 해당하는 로그만 필터
   const weekLogs = weekLogSnap.docs.map(d => d.data())
     .filter(l => weekDates.includes(l.date));
@@ -997,8 +890,9 @@ export async function renderMyRolesPage() {
   const { dates, monStr, friStr } = getThisWeekRange();
 
   // 이번 주 수행 로그
-  const logSnap = await getDocs(query(collection(db,'roleLogs'), where('studentId','==',state.currentUser.uid)));
-  const logs = logSnap.docs.map(d=>({id:d.id,...d.data()}))
+  // (읽기 절약) 내 학기 전체 기록 대신 이번 주 기록만 조회 후 내 것만 거름
+  const logSnap = await getDocs(query(collection(db,'roleLogs'), where('date','>=',monStr), where('date','<=',friStr)));
+  const logs = logSnap.docs.map(d=>({id:d.id,...d.data()})).filter(l=>l.studentId===state.currentUser.uid)
     .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   const todayLogMap = {};
   logs.filter(l=>l.date===todayStr).forEach(l=>{ todayLogMap[l.roleId]=l; });
@@ -1051,7 +945,7 @@ export async function renderMyRolesPage() {
     border:1px solid rgba(139,92,246,0.2); margin-bottom:20px;
   ">
     <div style="font-size:17px;font-weight:800;color:#5b21b6;margin-bottom:14px;">📋 1인1역 안내</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="m-stack" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:12px;">
         <div style="font-size:14px;font-weight:700;color:#6d28d9;margin-bottom:6px;">🎁 수행률 보상</div>
         <div style="font-size:13px;color:#4c1d95;line-height:1.7;">
@@ -1111,7 +1005,7 @@ export async function renderMyRolesPage() {
         <div style="font-size:13px;color:var(--text-muted);">배정된 역할 없음</div>
       </div>`;
 
-  const topHtml = `<div style="display:grid;grid-template-columns:1fr 3fr;gap:14px;margin-bottom:20px;align-items:stretch;">
+  const topHtml = `<div class="m-stack" style="display:grid;grid-template-columns:1fr 3fr;gap:14px;margin-bottom:20px;align-items:stretch;">
     <div style="display:flex;flex-direction:column;">
       ${myRoleCardHtml}
     </div>
