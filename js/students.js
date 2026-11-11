@@ -1,13 +1,14 @@
 // students.js — 학생 목록·포인트/능력치 수정·일괄 추가
-import { state } from './state.js?v=20261111b';
+import { state } from './state.js?v=20261111c';
 import {
   addDoc, auth, collection, createUserWithEmailAndPassword, db, doc, getDocFromServer, increment,
   serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261111b';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111b';
-import { formatLoginTime, makePw, nameToEmail } from './level.js?v=20261111b';
-import { reloadStudents } from './realtime.js?v=20261111b';
-import { renderDashboard } from './dashboard.js?v=20261111b';
+} from './firebase.js?v=20261111c';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111c';
+import { formatLoginTime } from './level.js?v=20261111c';
+import { helperCreateStudent, helperSignOut, savePwHint } from './accounts.js?v=20261111c';
+import { reloadStudents } from './realtime.js?v=20261111c';
+import { renderDashboard } from './dashboard.js?v=20261111c';
 
 // ===== 학생 목록 =====
 export function renderStudentList() {
@@ -243,11 +244,12 @@ window.bulkAddStudents = async function() {
     document.getElementById('bulkProgressBar').style.width = pct + '%';
     document.getElementById('bulkProgressText').textContent = `추가 중... (${i+1}/${parsed.length}) — ${name}`;
     try {
-      const email = nameToEmail(name);
-      const cred = await createUserWithEmailAndPassword(auth, email, makePw(pw));
-      await setDoc(doc(db, 'students', cred.user.uid), {
-        name, points: 0, accumulatedPoints: 0, pwHint: pw, createdAt: serverTimestamp()
+      // 보조 창구로 계정 생성 (선생님 로그인은 그대로 유지)
+      const user = await helperCreateStudent(name, pw);
+      await setDoc(doc(db, 'students', user.uid), {
+        name, points: 0, accumulatedPoints: 0, createdAt: serverTimestamp()
       });
+      await savePwHint(user.uid, pw);
       success++;
     } catch(e) {
       console.error(name, e);
@@ -255,6 +257,7 @@ window.bulkAddStudents = async function() {
     }
   }
 
+  await helperSignOut();
   document.getElementById('bulkProgressBar').style.width = '100%';
   document.getElementById('bulkProgressText').textContent = `완료! 성공 ${success}명${fail > 0 ? `, 실패 ${fail}명` : ''}`;
 

@@ -1,9 +1,10 @@
 // profile.js — 학생 설정·비밀번호·프로필 메시지
-import { state } from './state.js?v=20261111b';
-import { addDoc, auth, collection, db, doc, serverTimestamp, updateDoc } from './firebase.js?v=20261111b';
-import { closeModal, getMyStudentData, openModal, showToast } from './core.js?v=20261111b';
-import { makePw, nameToEmail } from './level.js?v=20261111b';
-import { buildCharHtml } from './avatar.js?v=20261111b';
+import { state } from './state.js?v=20261111c';
+import { EmailAuthProvider, addDoc, auth, collection, db, doc, reauthenticateWithCredential, serverTimestamp, updateDoc, updatePassword } from './firebase.js?v=20261111c';
+import { closeModal, getMyStudentData, openModal, showToast } from './core.js?v=20261111c';
+import { makePw } from './level.js?v=20261111c';
+import { pwCandidates, savePwHint } from './accounts.js?v=20261111c';
+import { buildCharHtml } from './avatar.js?v=20261111c';
 
 // ===== 학생: 설정 =====
 window.saveProfile = async function() {
@@ -38,22 +39,30 @@ window.changeStudentPassword = async function() {
   if (!current || !newPw || !confirm2) return showToast('모든 항목을 입력하세요');
   if (newPw !== confirm2) return showToast('새 비밀번호가 일치하지 않아요');
   if (newPw.length < 4) return showToast('비밀번호는 4자리 이상이어야 해요');
+  const user = auth.currentUser;
+  if (!user) return showToast('로그인이 풀렸어요. 다시 로그인해 주세요');
+  if (user.email === 'teacher@ourclass.kr') return showToast('학생 뷰에서는 학생 비밀번호를 바꿀 수 없어요. 학생 관리 → 🔒 비번변경을 써 주세요');
   try {
-    // 현재 비밀번호로 재인증
-    const email = nameToEmail(state.currentUser.name);
-    const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-    const credential = EmailAuthProvider.credential(email, makePw(current));
-    await reauthenticateWithCredential(auth.currentUser, credential);
-    await updatePassword(auth.currentUser, makePw(newPw));
-    // pwHint도 업데이트 (실패해도 비밀번호 자체는 이미 바뀐 상태이므로 실패로 보이지 않게 분리)
-    try { await updateDoc(doc(db, 'students', state.currentUser.uid), { pwHint: newPw }); } catch(e3) { console.error('pwHint 저장 실패', e3); }
+    // 현재 비밀번호로 재인증 — 이름으로 이메일을 다시 만들지 않고, 지금 로그인한 계정의 실제 이메일을 씀
+    // (예전엔 이름으로 만든 이메일이 계정과 조금만 달라도 비밀번호가 맞는데 실패했어요)
+    let reauthed = false, lastErr = null;
+    for (const pw of pwCandidates([current])) {
+      try { await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pw)); reauthed = true; break; }
+      catch (e) { lastErr = e; if (e.code === 'auth/too-many-requests') break; }
+    }
+    if (!reauthed) throw lastErr;
+    await updatePassword(user, makePw(newPw));
+    // 비밀번호 기록 저장 (선생님만 볼 수 있는 보관함). 실패해도 비밀번호 자체는 이미 바뀌었으므로 실패로 보이지 않게 분리
+    try { await savePwHint(state.currentUser.uid, newPw); } catch(e3) { console.error('비밀번호 기록 저장 실패', e3); }
     showToast('비밀번호가 변경됐어요 ✅ 이제 새 비밀번호로 로그인하세요');
     document.getElementById('studentCurrentPw').value = '';
     document.getElementById('studentNewPw').value = '';
     document.getElementById('studentConfirmPw').value = '';
   } catch(e) {
-    if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+    if (e?.code === 'auth/wrong-password' || e?.code === 'auth/invalid-credential') {
       showToast('현재 비밀번호가 틀렸어요');
+    } else if (e?.code === 'auth/too-many-requests') {
+      showToast('시도가 너무 많아 잠시 막혔어요. 5~10분 뒤에 다시 해 주세요');
     } else {
       showToast('오류: ' + e.message);
     }

@@ -1,13 +1,13 @@
 // auth.js — 로그인(교사/학생), 자동 로그아웃, 교사 비밀번호 변경
-import { state } from './state.js?v=20261111b';
+import { state } from './state.js?v=20261111c';
 import {
-  auth, browserSessionPersistence, collection, createUserWithEmailAndPassword, db, doc, getDoc,
-  getDocs, query, serverTimestamp, setDoc, setPersistence, signInWithEmailAndPassword, signOut,
-  updateDoc, updatePassword, where
-} from './firebase.js?v=20261111b';
-import { getCfgTeacher, showToast } from './core.js?v=20261111b';
-import { makePw, nameToEmail } from './level.js?v=20261111b';
-import { enterApp } from './enter.js?v=20261111b';
+  EmailAuthProvider, auth, browserSessionPersistence, collection, createUserWithEmailAndPassword, db,
+  deleteField, doc, getDoc, getDocs, query, reauthenticateWithCredential, serverTimestamp, setDoc,
+  setPersistence, signInWithEmailAndPassword, signOut, updateDoc, updatePassword, where
+} from './firebase.js?v=20261111c';
+import { getCfgTeacher, showToast } from './core.js?v=20261111c';
+import { makePw, nameToEmail } from './level.js?v=20261111c';
+import { enterApp } from './enter.js?v=20261111c';
 
 // ===== 로그인 탭 =====
 window.switchLoginTab = function(tab, btn) {
@@ -28,55 +28,45 @@ window.teacherLogin = async function() {
   const pw = document.getElementById('teacherPw').value.trim();
   const errEl = document.getElementById('teacherError');
   errEl.style.display = 'none';
+  const fail = (msg) => {
+    errEl.style.display = 'block';
+    errEl.textContent = msg || '아이디 또는 비밀번호가 올바르지 않습니다.';
+  };
   try {
-    // 1단계: Firestore에서 아이디/비밀번호 확인
-    const _tc3677 = await getCfgTeacher();
-    const cfgDoc = { exists: () => true, data: () => _tc3677 };
-    const storedPw = _tc3677.password || '0124';
-    const storedId = cfgDoc.exists() && cfgDoc.data().teacherId ? cfgDoc.data().teacherId : 'teacher';
-    // 비밀번호 확인
-    if (nameInput !== storedId || pw !== storedPw) {
-      errEl.style.display = 'block';
-      return;
-    }
-    // 2단계: Firebase Auth로 로그인
+    // 1단계: 아이디 확인 (아이디는 비밀이 아니라 config/teacher 에 둬요)
+    const cfg = await getCfgTeacher();
+    const storedId = cfg.teacherId || 'teacher';
+    if (nameInput !== storedId || !pw) return fail();
+    // 2단계: 비밀번호는 Firebase 로그인이 직접 확인해요 (비밀번호를 데이터베이스에 저장하지 않음)
     const teacherEmail = 'teacher@ourclass.kr';
+    await setPersistence(auth, browserSessionPersistence);
     try {
-      await setPersistence(auth, browserSessionPersistence);
       await signInWithEmailAndPassword(auth, teacherEmail, makePw(pw));
     } catch(authErr) {
-      if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/invalid-login-credentials') {
-        // 계정 없으면 새로 생성
-        await createUserWithEmailAndPassword(auth, teacherEmail, makePw(pw));
-      } else if (authErr.code === 'auth/wrong-password') {
-        // 비밀번호 불일치 - 이전 비밀번호 후보들로 로그인 후 업데이트 시도
-        const candidates = ['0124!!', '0124', pw + '!!'];
-        let fixed = false;
-        for (const old of candidates) {
-          try {
-            const cred = await signInWithEmailAndPassword(auth, teacherEmail, old);
-            await updatePassword(cred.user, makePw(pw));
-            fixed = true;
-            break;
-          } catch(e2) {}
-        }
-        if (!fixed) {
-          // 모든 시도 실패 - 기존 계정 삭제 후 재생성
-          try {
-            const { deleteUser } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-            // 현재 auth 사용자가 있으면 삭제
-            if (auth.currentUser) await deleteUser(auth.currentUser);
-          } catch(e3) {}
-          await createUserWithEmailAndPassword(auth, teacherEmail, makePw(pw));
-        }
+      if (authErr.code === 'auth/too-many-requests') return fail('로그인 시도가 너무 많아 잠시 막혔어요. 5~10분 뒤에 다시 시도해주세요.');
+      // 예전 방식 호환 (데이터 정리 전까지만): config 에 예전 비밀번호가 남아 있고 입력값과 같다면,
+      // Firebase 계정 비밀번호가 예전 값으로 남아 있을 수 있어 한 번 맞춰 봐요.
+      if (!(cfg.password && pw === cfg.password)) return fail();
+      let ok = false;
+      for (const old of ['0124!!', '0124', pw + '!!', pw]) {
+        try {
+          const cred = await signInWithEmailAndPassword(auth, teacherEmail, old);
+          await updatePassword(cred.user, makePw(pw));
+          ok = true;
+          break;
+        } catch(e2) {}
       }
+      if (!ok) {
+        // 선생님 계정이 아예 없을 때(처음 설치)만 새로 만들어져요. 이미 있으면 실패합니다.
+        try { await createUserWithEmailAndPassword(auth, teacherEmail, makePw(pw)); ok = true; } catch(e3) {}
+      }
+      if (!ok) return fail();
     }
     state.currentUser = { role: 'teacher', name: '선생님', uid: 'teacher' };
     enterApp();
   } catch(e) {
     console.error(e);
-    errEl.style.display = 'block';
-    errEl.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    fail();
   }
 };
 
@@ -88,9 +78,23 @@ window.studentLogin = async function() {
   errEl.style.display = 'none';
   if (!name || !pw) { errEl.style.display = 'block'; errEl.textContent = '이름과 비밀번호를 입력하세요.'; return; }
   try {
-    const email = nameToEmail(name);
     await setPersistence(auth, browserSessionPersistence);
-    const cred = await signInWithEmailAndPassword(auth, email, makePw(pw));
+    // 맞게 입력했는데 "틀렸다"고 나오던 경우를 줄이기 위해, 틀렸다는 답이 오면 몇 가지만 더 시도해요 (최대 3번)
+    //  · 예전에 만든 계정 중 4~5자리 비밀번호를 그대로(뒤에 !! 없이) 저장한 경우
+    //  · 이름에 띄어쓰기가 섞이거나, 자판에 따라 한글 글자 조합 방식(NFC/NFD)이 달라진 경우
+    const tidyName = name.normalize('NFC').replace(/\s+/g, '');
+    const attempts = [[name, makePw(pw)]];
+    if (makePw(pw) !== pw) attempts.push([name, pw]);
+    if (tidyName !== name) attempts.push([tidyName, makePw(pw)]);
+    let cred = null, lastErr = null;
+    for (const [n, p] of attempts.slice(0, 3)) {
+      try { cred = await signInWithEmailAndPassword(auth, nameToEmail(n), p); break; }
+      catch (e) {
+        lastErr = e;
+        if (e.code !== 'auth/invalid-credential' && e.code !== 'auth/wrong-password' && e.code !== 'auth/user-not-found' && e.code !== 'auth/invalid-email') break;
+      }
+    }
+    if (!cred) throw lastErr;
     const authUid = cred.user.uid; // Firebase Auth uid
 
     // Auth uid로 직접 Firestore 문서 조회 (가장 정확)
@@ -151,32 +155,29 @@ window.changeTeacherPassword = async function() {
   const newId = document.getElementById('newTeacherId').value.trim();
   const newPw = document.getElementById('newPw').value.trim();
   const confirm2 = document.getElementById('confirmPw').value.trim();
+  if (!newId && !newPw) return showToast('변경할 내용을 입력하세요');
+  if (!current) return showToast('현재 비밀번호를 입력하세요');
+  if (newPw && newPw !== confirm2) return showToast('새 비밀번호가 일치하지 않아요');
+  if (newPw && newPw.length < 4) return showToast('비밀번호는 4자리 이상이어야 해요');
+  const user = auth.currentUser;
+  if (!user || user.email !== 'teacher@ourclass.kr') return showToast('선생님 계정으로 로그인한 상태에서만 바꿀 수 있어요');
   try {
-    const _tcfg = await getCfgTeacher();
-    const storedPw = _tcfg.password || '0124';
-    if (current !== storedPw) return showToast('현재 비밀번호가 틀렸어요');
-    if (newPw && newPw !== confirm2) return showToast('새 비밀번호가 일치하지 않아요');
-    const updateData = {};
+    // 현재 비밀번호 확인은 Firebase가 직접 해요
+    let reauthed = false, lastErr = null;
+    for (const pw of [makePw(current), current]) {
+      try { await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pw)); reauthed = true; break; }
+      catch(e) { lastErr = e; if (e.code === 'auth/too-many-requests') break; }
+    }
+    if (!reauthed) {
+      if (lastErr?.code === 'auth/too-many-requests') return showToast('시도가 너무 많아 잠시 막혔어요. 5~10분 뒤에 다시 해 주세요');
+      return showToast('현재 비밀번호가 틀렸어요');
+    }
+    if (newPw) await updatePassword(user, makePw(newPw));
+    // 아이디만 config 에 저장. 예전에 저장하던 비밀번호 칸은 지워요.
+    const updateData = { password: deleteField() };
     if (newId) updateData.teacherId = newId;
-    if (newPw) updateData.password = newPw;
-    if (Object.keys(updateData).length === 0) return showToast('변경할 내용을 입력하세요');
-    // Firestore 업데이트
     await setDoc(doc(db, 'config', 'teacher'), updateData, { merge: true });
     state._cfgTeacher = null; // 캐시 무효화
-    // Firebase Auth 비밀번호도 업데이트
-    if (newPw) {
-      const teacherEmail = 'teacher@ourclass.kr';
-      try {
-        // 현재 비밀번호로 Auth 로그인 후 업데이트
-        const { signInWithEmailAndPassword: signIn, updatePassword: updPw } =
-          await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-        const cred = await signIn(auth, teacherEmail, makePw(current));
-        await updPw(cred.user, makePw(newPw));
-      } catch(authErr) {
-        // Auth 업데이트 실패해도 Firestore는 저장됨 - 다음 로그인 시 자동 동기화
-        console.warn('Auth 업데이트 실패, 다음 로그인 시 자동 동기화:', authErr.code);
-      }
-    }
     showToast('저장됐어요 ✅');
     document.getElementById('currentPw').value = '';
     document.getElementById('newTeacherId').value = '';

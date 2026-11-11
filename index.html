@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261111b">
+<link rel="stylesheet" href="css/style.css?v=20261111c">
 </head>
 <body>
 
@@ -37,7 +37,7 @@
       <div id="studentLoginForm" class="login-form">
         <div class="form-group">
           <label>이름</label>
-          <input type="text" id="studentName" placeholder="이름을 입력하세요" />
+          <input type="text" id="studentName" placeholder="이름을 입력하세요" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" />
         </div>
         <div class="form-group">
           <label>비밀번호</label>
@@ -312,6 +312,7 @@
             <button class="btn btn-secondary" onclick="openBulkAddModal()">👥 학생 일괄 추가</button>
             <button class="btn btn-primary" onclick="openAddStudentModal()">+ 학생 추가</button>
             <button class="btn btn-secondary" onclick="downloadFullBackup(this)">💾 전체 데이터 백업</button>
+            <button class="btn btn-secondary" onclick="openCleanupModal()">🧹 데이터 정리</button>
             <button class="btn btn-danger" onclick="openResetModal()">🔄 데이터 초기화</button>
             <button class="btn btn-secondary" onclick="cleanupDuplicateHistory()">🧹 중복 내역 정리</button>
             <button class="btn btn-secondary" onclick="openDungeonRewardReclaim()">⚔️ 던전 보상 회수</button>
@@ -3186,7 +3187,7 @@
 <!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
-<script type="module" src="js/app.js?v=20261111b"></script>
+<script type="module" src="js/app.js?v=20261111c"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
 </html>

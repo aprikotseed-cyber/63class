@@ -1,23 +1,23 @@
 // inventory.js — 내 보관함 (보상·칭호·꾸미기·아바타)
-import { state } from './state.js?v=20261111b';
+import { state } from './state.js?v=20261111c';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, increment, query, serverTimestamp,
   setDoc, updateDoc, where
-} from './firebase.js?v=20261111b';
+} from './firebase.js?v=20261111c';
 import {
   GRADE_ORDER, closeModal, getMyExchanges, getMyStudentData, loadTitleInventoryCache, openModal, showToast
-} from './core.js?v=20261111b';
-import { formatTime } from './level.js?v=20261111b';
-import { renderStudentHome } from './home.js?v=20261111b';
-import { initFrameGrids, loadCustomFrames, renderInventoryDecor } from './frames.js?v=20261111b';
-import { GRADE_POINTS, getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261111b';
+} from './core.js?v=20261111c';
+import { formatTime } from './level.js?v=20261111c';
+import { renderStudentHome } from './home.js?v=20261111c';
+import { initFrameGrids, loadCustomFrames, renderInventoryDecor } from './frames.js?v=20261111c';
+import { GRADE_POINTS, getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261111c';
 import {
   AVATAR_CATS, AVATAR_CAT_ICONS, AVATAR_MANNEQUIN, avatarInventory, avatarItemImg, avatarItemList,
   loadAvatarEquipped, loadAvatarInventory, loadAvatarItemList
-} from './avatar.js?v=20261111b';
-import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261111b';
-import { renderStudentSettings } from './profile.js?v=20261111b';
-import { renderMyPoints } from './points.js?v=20261111b';
+} from './avatar.js?v=20261111c';
+import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261111c';
+import { renderStudentSettings } from './profile.js?v=20261111c';
+import { renderMyPoints } from './points.js?v=20261111c';
 
 // ===== 내 보관함: 아바타 탭 =====
 export async function renderInventoryAvatar() {

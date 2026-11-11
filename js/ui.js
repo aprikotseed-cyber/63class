@@ -1,5 +1,5 @@
 // ui.js — 화면 공통 (탭 페이드, 사이드바, 로딩)
-import { db, doc, getDoc, setDoc } from './firebase.js?v=20261111b';
+import { db, doc, getDoc, setDoc } from './firebase.js?v=20261111c';
 
 // ===== 탭 패널 페이드 헬퍼 =====
 export function fadePanel(el) {
@@ -37,8 +37,9 @@ window.closeSidebar = function() {
 
 async function initConfig() {
   const cfgDoc = await getDoc(doc(db, 'config', 'teacher'));
+  // 비밀번호는 저장하지 않아요 (Firebase 로그인이 확인). 아이디만 기본값을 둬요.
   if (!cfgDoc.exists()) {
-    await setDoc(doc(db, 'config', 'teacher'), { password: '0124', teacherId: 'teacher' });
+    await setDoc(doc(db, 'config', 'teacher'), { teacherId: 'teacher' });
   } else if (!cfgDoc.data().teacherId) {
     await setDoc(doc(db, 'config', 'teacher'), { teacherId: 'teacher' }, { merge: true });
   }

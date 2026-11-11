@@ -1,10 +1,10 @@
 // logs.js — 누가기록
-import { state } from './state.js?v=20261111b';
+import { state } from './state.js?v=20261111c';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp,
   setDoc, where
-} from './firebase.js?v=20261111b';
-import { closeModal, openModal, showToast } from './core.js?v=20261111b';
+} from './firebase.js?v=20261111c';
+import { closeModal, openModal, showToast } from './core.js?v=20261111c';
 
 // ===== 누가기록 시스템 =====
 window.openQuickLogModal = function() {
