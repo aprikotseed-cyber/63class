@@ -5,10 +5,21 @@
 - 데이터: Firebase (인증 + Firestore)
 - 배포: GitHub Pages (`main` 브랜치의 파일이 그대로 사이트가 돼요, 빌드 과정 없음)
 
+## 지금은 시험 기간이에요
+
+- `index.html`: 지금 아이들이 쓰는 기존 버전 (파일 하나짜리, 그대로 둠)
+- `beta.html`: 새 구조 버전 (`css/`, `js/` 사용). 주소 끝에 `/beta.html`을 붙여 들어가요
+- 둘 다 **같은 실제 데이터**를 써요. beta에서 카드 지급처럼 데이터를 바꾸면 실제로 바뀌어요
+- 확인이 끝나면 `beta.html`을 `index.html`로 바꿔서 본 적용해요
+
+## 데이터 백업
+
+선생님으로 로그인 → 학생 관리 → **💾 전체 데이터 백업**. 모든 데이터를 `63levelup-backup-날짜.json` 파일로 내려받아요 (읽기만 하고 데이터는 바꾸지 않아요).
+
 ## 구조
 
 ```
-index.html          화면 뼈대 (페이지·모달 HTML)
+beta.html           화면 뼈대 (페이지·모달 HTML) — 본 적용 후 index.html
 css/style.css       디자인
 js/app.js           시작점: 모든 기능을 불러오고 자동 로그인 처리
 js/firebase.js      Firebase 연결 (앱·인증·DB) + 읽기 횟수 추적 (콘솔에서 rsum())
@@ -43,6 +54,8 @@ js/notice.js        공지사항
 js/messages.js      쪽지 (교사/학생)
 js/books.js         독서량, 독서 완료 카드
 js/crowdfunding.js  크라우드펀딩
+js/backup.js        전체 데이터 백업 (교사)
+js/backup-format.js 백업 파일 형식·컬렉션 목록
 
 포인트·보상
 js/cards.js         칭찬/벌점 카드 관리·부여·내역·회수

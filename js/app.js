@@ -40,6 +40,7 @@ import './checklist.js?v=20261111a';
 import './pets.js?v=20261111a';
 import './student-view.js?v=20261111a';
 import './crowdfunding.js?v=20261111a';
+import './backup.js?v=20261111a';
 
 // 페이지 로드 시 로그인 화면에도 사이트 설정 반영
 (async function initLoginScreen() {
