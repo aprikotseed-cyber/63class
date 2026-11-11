@@ -5,12 +5,9 @@
 - 데이터: Firebase (인증 + Firestore)
 - 배포: GitHub Pages (`main` 브랜치의 파일이 그대로 사이트가 돼요, 빌드 과정 없음)
 
-## 지금은 시험 기간이에요
+## 비상용 옛 버전
 
-- `index.html`: 지금 아이들이 쓰는 기존 버전 (파일 하나짜리, 그대로 둠)
-- `beta.html`: 새 구조 버전 (`css/`, `js/` 사용). 주소 끝에 `/beta.html`을 붙여 들어가요
-- 둘 다 **같은 실제 데이터**를 써요. beta에서 카드 지급처럼 데이터를 바꾸면 실제로 바뀌어요
-- 확인이 끝나면 `beta.html`을 `index.html`로 바꿔서 본 적용해요
+`legacy.html`은 재건 전의 파일 하나짜리 버전이에요. 새 버전에 문제가 생기면 주소 끝에 `/legacy.html`을 붙여 임시로 쓸 수 있어요 (같은 데이터를 써요). 충분히 써 보고 문제가 없으면 지워도 돼요.
 
 ## 데이터 백업
 
@@ -19,7 +16,7 @@
 ## 구조
 
 ```
-beta.html           화면 뼈대 (페이지·모달 HTML) — 본 적용 후 index.html
+index.html          화면 뼈대 (페이지·모달 HTML)
 css/style.css       디자인
 js/app.js           시작점: 모든 기능을 불러오고 자동 로그인 처리
 js/firebase.js      Firebase 연결 (앱·인증·DB) + 읽기 횟수 추적 (콘솔에서 rsum())

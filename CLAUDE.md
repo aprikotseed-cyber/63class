@@ -1,6 +1,6 @@
 # 육삼레벨업 — 작업 메모
 
-- **시험 기간:** 새 구조 입구는 `beta.html`, `index.html`은 기존 단일 파일 버전(건드리지 않음). 본 적용 = `beta.html` → `index.html` 이름 바꾸기.
+- `legacy.html`은 재건 전 단일 파일 버전(비상용). 고치지 않아요.
 - 새 Firestore 컬렉션을 쓰면 `js/backup-format.js`의 BACKUP_COLLECTIONS에도 추가 (테스트가 검사).
 - 빌드 도구 없는 정적 사이트 (GitHub Pages, `main` 브랜치). `index.html` + `css/style.css` + `js/*.js` (ES 모듈).
 - Firebase SDK는 CDN(gstatic, 10.12.0)에서 `js/firebase.js`가 불러오고, 다른 파일은 `./firebase.js`에서 import 해요.
