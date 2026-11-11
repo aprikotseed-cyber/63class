@@ -1,1 +1,100 @@
-# 63class
+# 육삼레벨업
+
+게이미피케이션 기반 학급경영 홈페이지예요. 학생은 출석·1인1역·칭찬 카드로 포인트와 능력치를 모으고, 레벨을 올리고, 보상 상점·꾸미기(프레임·아바타·칭호·펫)·던전에 참여해요. 선생님은 학생 관리, 카드 부여, 보상 승인, 누가기록, 게시판·쪽지 등을 한곳에서 관리해요.
+
+- 데이터: Firebase (인증 + Firestore)
+- 배포: GitHub Pages (`main` 브랜치의 파일이 그대로 사이트가 돼요, 빌드 과정 없음)
+
+## 지금은 시험 기간이에요
+
+- `index.html`: 지금 아이들이 쓰는 기존 버전 (파일 하나짜리, 그대로 둠)
+- `beta.html`: 새 구조 버전 (`css/`, `js/` 사용). 주소 끝에 `/beta.html`을 붙여 들어가요
+- 둘 다 **같은 실제 데이터**를 써요. beta에서 카드 지급처럼 데이터를 바꾸면 실제로 바뀌어요
+- 확인이 끝나면 `beta.html`을 `index.html`로 바꿔서 본 적용해요
+
+## 데이터 백업
+
+선생님으로 로그인 → 학생 관리 → **💾 전체 데이터 백업**. 모든 데이터를 `63levelup-backup-날짜.json` 파일로 내려받아요 (읽기만 하고 데이터는 바꾸지 않아요).
+
+## 구조
+
+```
+beta.html           화면 뼈대 (페이지·모달 HTML) — 본 적용 후 index.html
+css/style.css       디자인
+js/app.js           시작점: 모든 기능을 불러오고 자동 로그인 처리
+js/firebase.js      Firebase 연결 (앱·인증·DB) + 읽기 횟수 추적 (콘솔에서 rsum())
+js/state.js         여러 파일이 함께 바꾸는 공용 상태 (state.currentUser, state.students …)
+js/core.js          전역 상수, 설정 캐시, 공통 유틸(토스트·모달)
+js/ui.js            화면 공통 (탭 페이드, 사이드바, 로딩)
+js/level.js         레벨·랭크 계산, 랭크업 체크
+
+로그인·진입
+js/auth.js          로그인(교사/학생), 자동 로그아웃, 교사 비밀번호 변경
+js/enter.js         로그인 후 앱 진입, 대기 중 알림 확인, 로그아웃
+js/nav.js           페이지 이동(네비게이션)
+js/realtime.js      교사 데이터 로드, 알림 큐, Firestore 실시간 리스너
+js/site-config.js   사이트 설정(로고·배경), 교사 프로필 캐릭터
+js/student-view.js  교사의 학생 뷰 전환
+
+교사 관리
+js/dashboard.js     교사 대시보드
+js/students.js      학생 목록·포인트/능력치 수정·일괄 추가
+js/student-detail.js 학생/친구 상세 보기
+js/admin.js         데이터 초기화, 학생 계정 관리·재생성·마이그레이션
+js/logs.js          누가기록
+js/checklist.js     체크표 시스템
+
+학급 활동
+js/home.js          홈 화면(간판, 교사/학생 랭킹)
+js/attendance.js    출석 체크, 주간 출석 현황
+js/roles.js         1인1역 시스템
+js/role-auction.js  1인1역 경매
+js/board.js         자유게시판
+js/notice.js        공지사항
+js/messages.js      쪽지 (교사/학생)
+js/books.js         독서량, 독서 완료 카드
+js/crowdfunding.js  크라우드펀딩
+js/backup.js        전체 데이터 백업 (교사)
+js/backup-format.js 백업 파일 형식·컬렉션 목록
+
+포인트·보상
+js/cards.js         칭찬/벌점 카드 관리·부여·내역·회수
+js/points.js        학생: 내 포인트
+js/shop.js          보상 상점·보상 관리·할인·재고 현황
+js/exchanges.js     보상 교환 신청 관리
+js/inventory.js     내 보관함 (보상·칭호·꾸미기·아바타)
+
+꾸미기
+js/frames.js        프레임 시스템 (상점·추가·수정)
+js/avatar.js        아바타 시스템 (데이터·교사 관리)
+js/avatar-shop.js   아바타 상점 (학생)
+js/titles.js        칭호 시스템 (목록·관리·회수·선물·장착)
+js/pets.js          펫 시스템
+js/emoji-picker.js  이모지 선택창
+js/profile.js       학생 설정·비밀번호·프로필 메시지
+
+던전
+js/dungeon.js       챌린지 던전 (학생: 로비·전투·단체 던전)
+js/dungeon-admin.js 던전 관리 (교사: 설정·이미지 라이브러리·보스)
+js/quiz-dungeon.js  문제 던전
+
+scripts/bump-version.mjs  파일 버전(?v=) 한꺼번에 올리기
+tests/                    파일 연결·버전 검사
+```
+
+화면의 버튼(`onclick="..."`)이 부르는 함수는 각 파일에서 `window.함수이름 = ...`으로 등록돼 있어요.
+
+## 고치고 올리기
+
+1. 파일 수정
+2. `npm run bump` — 휴대폰·태블릿이 예전 파일을 쓰지 않도록 버전을 올려요
+3. `npm test` — 파일끼리 주고받는 이름이 맞는지 확인해요 (처음 한 번 `npm install`)
+4. 커밋 후 `main`에 합치면 GitHub Pages에 반영돼요
+
+## 내 컴퓨터에서 열어 보기
+
+`js/`가 모듈 방식이라 파일을 더블클릭하면 안 열려요. 저장소 폴더에서 아래를 실행하고 http://localhost:8000 으로 열어요.
+
+```
+python3 -m http.server 8000
+```
