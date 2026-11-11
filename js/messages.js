@@ -1,13 +1,13 @@
 // messages.js — 쪽지 (교사/학생)
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, updateDoc,
   where
-} from './firebase.js?v=20261111a';
-import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261111a';
-import { formatTime } from './level.js?v=20261111a';
-import { updateMsgBadge } from './realtime.js?v=20261111a';
-import { isSingleEmoji } from './titles.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261111b';
+import { formatTime } from './level.js?v=20261111b';
+import { updateMsgBadge } from './realtime.js?v=20261111b';
+import { isSingleEmoji } from './titles.js?v=20261111b';
 
 // ===== 쪽지 (교사/학생 완전 분리) =====
 export function renderMessages() {

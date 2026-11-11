@@ -1,5 +1,5 @@
 // dashboard.js — 교사 대시보드
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 
 // ===== 대시보드 =====
 export function renderDashboard() {

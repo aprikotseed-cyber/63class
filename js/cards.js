@@ -1,17 +1,17 @@
 // cards.js — 칭찬/벌점 카드 관리·부여·내역·회수
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, limit,
   orderBy, query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261111a';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111a';
-import { formatTime } from './level.js?v=20261111a';
-import { discountHtml } from './shop.js?v=20261111a';
-import { reloadRewards, reloadStudents } from './realtime.js?v=20261111a';
-import { renderDashboard } from './dashboard.js?v=20261111a';
-import { makeAbilityTags } from './titles.js?v=20261111a';
-import { buildCharHtml } from './avatar.js?v=20261111a';
-import { fadePanel } from './ui.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261111b';
+import { formatTime } from './level.js?v=20261111b';
+import { discountHtml } from './shop.js?v=20261111b';
+import { reloadRewards, reloadStudents } from './realtime.js?v=20261111b';
+import { renderDashboard } from './dashboard.js?v=20261111b';
+import { makeAbilityTags } from './titles.js?v=20261111b';
+import { buildCharHtml } from './avatar.js?v=20261111b';
+import { fadePanel } from './ui.js?v=20261111b';
 
 export let praiseCards = [];
 let currentCardTab = 'praise';
@@ -26,11 +26,6 @@ export async function reloadPraiseCards() {
   const snap = await getDocs(collection(db, 'praiseCards'));
   praiseCards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   window._cachedPraiseCards = praiseCards;
-}
-
-async function renderPointCards() {
-  await reloadPraiseCards();
-  switchCardTab(currentCardTab);
 }
 
 window.switchCardTab = function(type) {
@@ -614,22 +609,6 @@ window.deleteReward = async function(id, name) {
 
 // ===== 학생: 카드 목록 =====
 let studentCurrentCardTab = 'praise';
-
-async function renderStudentCards() {
-  await reloadPraiseCards();
-  const content = document.getElementById('cardPageContent');
-  if (content && !document.getElementById('studentCardTabPraise')) {
-    content.innerHTML = `
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button id="studentPraiseTabBtn" class="card-type-tab active" onclick="switchStudentCardTab('praise',this)">칭찬 카드</button>
-        <button id="studentPenaltyTabBtn" class="card-type-tab" onclick="switchStudentCardTab('penalty',this)">벌점 카드</button>
-      </div>
-      <div id="studentCardTabPraise"></div>
-      <div id="studentCardTabPenalty" style="display:none;"></div>`;
-  }
-  filterStudentCards('praise', 'all');
-  filterStudentCards('penalty', 'all');
-}
 
 window.switchStudentCardTab = function(type, btn) {
   studentCurrentCardTab = type;

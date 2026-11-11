@@ -1,14 +1,14 @@
 // shop.js — 보상 상점·보상 관리·할인·재고 현황
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, doc, getDoc, getDocs, increment, query, serverTimestamp, updateDoc,
   where
-} from './firebase.js?v=20261111a';
-import { closeModal, getMyStudentData, openModal, showToast } from './core.js?v=20261111a';
-import { reloadRewards, reloadStudents } from './realtime.js?v=20261111a';
-import { renderRewards } from './cards.js?v=20261111a';
-import { loadBanner } from './home.js?v=20261111a';
-import { renderCrowdfunding } from './crowdfunding.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, getMyExchanges, getMyStudentData, openModal, showToast } from './core.js?v=20261111b';
+import { reloadRewards, reloadStudents } from './realtime.js?v=20261111b';
+import { renderRewards } from './cards.js?v=20261111b';
+import { loadBanner } from './home.js?v=20261111b';
+import { renderCrowdfunding } from './crowdfunding.js?v=20261111b';
 
 // 할인 미리보기
 window.updateDiscountPreview = function() {
@@ -119,13 +119,9 @@ async function renderRewardShop() {
   const myPts = _meFrame.points || 0;
 
   // 내 구매 이력 (pending+approved) 집계 - 일반 보상(study/snack/stationery)만
-  const myExSnap = await getDocs(query(
-    collection(db, 'exchanges'),
-    where('studentId', '==', state.currentUser.uid)
-  ));
+  const myExList = await getMyExchanges(); // (읽기 절약) 실시간으로 받고 있는 내 신청 목록 사용
   const myCountMap = {};
-  myExSnap.docs.forEach(d => {
-    const ex = d.data();
+  myExList.forEach(ex => {
     // rewardId가 있고, 일반 보상 카테고리이며, pending/approved인 것만 집계
     if (!ex.rewardId) return;
     if (['frame','avatar','pet'].includes(ex.type||ex.rewardCategory)) return;

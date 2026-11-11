@@ -1,15 +1,12 @@
 // logs.js — 누가기록
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp,
   setDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, openModal, showToast } from './core.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, openModal, showToast } from './core.js?v=20261111b';
 
 // ===== 누가기록 시스템 =====
-const LOG_CATEGORIES = ['생활지도','학습','상담','특이사항','기타'];
-const LOG_CAT_COLORS = { '생활지도':'#d97706','학습':'#2563eb','상담':'#16a34a','특이사항':'#dc2626','기타':'#6b7280' };
-
 window.openQuickLogModal = function() {
   // 학생 목록 채우기
   const sel = document.getElementById('quickLogStudent');

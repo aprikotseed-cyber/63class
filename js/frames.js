@@ -1,12 +1,12 @@
 // frames.js — 프레임 시스템 (상점·추가·수정)
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, doc, getDoc, getDocs, increment, query, serverTimestamp, setDoc,
   updateDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, getMyStudentData, openModal, showToast } from './core.js?v=20261111a';
-import { reloadStudents } from './realtime.js?v=20261111a';
-import { AVATAR_MANNEQUIN, buildCharHtml } from './avatar.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, getMyStudentData, openModal, showToast } from './core.js?v=20261111b';
+import { reloadStudents } from './realtime.js?v=20261111b';
+import { AVATAR_MANNEQUIN, buildCharHtml } from './avatar.js?v=20261111b';
 
 // ===== 프레임 시스템 =====
 export const FRAME_DATA = {

@@ -1,15 +1,15 @@
 // admin.js — 데이터 초기화, 학생 계정 관리·재생성·마이그레이션
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, auth, collection, createUserWithEmailAndPassword, db, deleteDoc, doc, getDoc, getDocs,
   increment, query, serverTimestamp, setDoc, signInWithEmailAndPassword, updateDoc, updatePassword,
   where
-} from './firebase.js?v=20261111a';
-import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261111a';
-import { makePw, nameToEmail } from './level.js?v=20261111a';
-import { reloadStudents } from './realtime.js?v=20261111a';
-import { renderDashboard } from './dashboard.js?v=20261111a';
-import { renderStudentList } from './students.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261111b';
+import { makePw, nameToEmail } from './level.js?v=20261111b';
+import { reloadStudents } from './realtime.js?v=20261111b';
+import { renderDashboard } from './dashboard.js?v=20261111b';
+import { renderStudentList } from './students.js?v=20261111b';
 
 // ===== 데이터 초기화 =====
 // 전체 프레임 인벤토리 초기화
@@ -40,12 +40,7 @@ window.openResetModal = function() {
 
 window.openDungeonRewardReclaim = async function() {
   showToast('내역 불러오는 중...');
-  // 모든 던전 보상 내역 조회 (개인/단체/문제 던전)
-  const [soloSnap, raidSnap, quizSnap] = await Promise.all([
-    getDocs(query(collection(db, 'history'), where('source','==','dungeon'))),
-    getDocs(query(collection(db, 'history'), where('source','==','dungeon'))),
-    getDocs(query(collection(db, 'history'), where('source','==','quizDungeon'))),
-  ]);
+  // 모든 던전 보상 내역 조회 (개인/단체/문제 던전) — 한 번만 조회
   const allSnap = await getDocs(query(
     collection(db, 'history'),
     where('source', 'in', ['dungeon','quizDungeon'])

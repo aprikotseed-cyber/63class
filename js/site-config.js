@@ -1,8 +1,8 @@
 // site-config.js — 사이트 설정(로고·배경), 교사 프로필 캐릭터
-import { state } from './state.js?v=20261111a';
-import { db, deleteDoc, doc, serverTimestamp, setDoc } from './firebase.js?v=20261111a';
-import { closeModal, getCfgSite, showToast } from './core.js?v=20261111a';
-import { loadNotice } from './notice.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
+import { db, deleteDoc, doc, serverTimestamp, setDoc } from './firebase.js?v=20261111b';
+import { closeModal, getCfgSite, showToast } from './core.js?v=20261111b';
+import { loadNotice } from './notice.js?v=20261111b';
 
 // ===== 사이트 설정 로드 =====
 export async function loadSiteSettings() {

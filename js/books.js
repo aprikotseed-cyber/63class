@@ -1,14 +1,14 @@
 // books.js — 독서량, 독서 완료 카드
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   addDoc, collection, db, doc, getDoc, getDocFromServer, getDocs, increment, query,
   serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111a';
-import { closeModal, openModal, showToast } from './core.js?v=20261111a';
-import { checkAndGrantRankUp } from './level.js?v=20261111a';
-import { reloadStudents } from './realtime.js?v=20261111a';
-import { renderDashboard } from './dashboard.js?v=20261111a';
-import { praiseCards, reloadPraiseCards } from './cards.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, openModal, showToast } from './core.js?v=20261111b';
+import { checkAndGrantRankUp } from './level.js?v=20261111b';
+import { reloadStudents } from './realtime.js?v=20261111b';
+import { renderDashboard } from './dashboard.js?v=20261111b';
+import { praiseCards, reloadPraiseCards } from './cards.js?v=20261111b';
 
 // ===== 독서량 (교사/학생 공통) =====
 let _bookChartInstance = null;
@@ -69,13 +69,6 @@ export async function renderBooksPage() {
   } else {
     await bookSwitchTab(_bookCurrentTab);
   }
-}
-
-async function renderBookManage() {
-  const snap = await getDoc(doc(db, 'config', 'bookData_meta'));
-  const wkInput = document.getElementById('bookWeekInput');
-  if (wkInput && !wkInput.value) wkInput.value = getCurrentWeekKey();
-  await loadBookWeekData();
 }
 
 window.loadBookWeekData = async function() {
@@ -167,11 +160,6 @@ window.bookSwitchTab = async function(tab) {
   else await renderBookMonthView(container);
 };
 
-// 학생: bookChart 진입 시 호출
-async function renderBookChart() {
-  await bookSwitchTab(_bookCurrentTab);
-}
-
 // 공통: 이번 주 뷰
 async function renderBookWeekView(container) {
   await loadChartJs();
@@ -210,7 +198,7 @@ async function renderBookWeekView(container) {
 
   // 컨테이너 HTML 삽입
   container.innerHTML = `
-    <div style="display:grid;grid-template-columns:6fr 4fr;gap:16px;align-items:stretch;">
+    <div class="m-stack" style="display:grid;grid-template-columns:6fr 4fr;gap:16px;align-items:stretch;">
       <div class="card" style="padding:20px;min-width:0;display:flex;flex-direction:column;">
         <div style="display:flex;gap:20px;align-items:center;margin-bottom:12px;justify-content:center;font-size:13px;">
           <span style="display:flex;align-items:center;gap:6px;"><svg width="30" height="10"><line x1="0" y1="5" x2="30" y2="5" stroke="#94a3b8" stroke-width="2.5"/></svg>저번 주</span>
@@ -274,7 +262,7 @@ async function renderBookMonthView(container) {
   const rankHtml = buildRankTable(rows.map(r=>({...r,count:r.count,_prev:r.prevCount})), null, 'month', myName, rows);
 
   container.innerHTML = `
-    <div style="display:grid;grid-template-columns:6fr 4fr;gap:16px;align-items:stretch;">
+    <div class="m-stack" style="display:grid;grid-template-columns:6fr 4fr;gap:16px;align-items:stretch;">
       <div class="card" style="padding:20px;min-width:0;display:flex;flex-direction:column;">
         <div style="display:flex;gap:20px;align-items:center;margin-bottom:12px;justify-content:center;font-size:13px;">
           <span style="display:flex;align-items:center;gap:6px;"><svg width="30" height="10"><line x1="0" y1="5" x2="30" y2="5" stroke="#94a3b8" stroke-width="2.5"/></svg>${pm} 누적</span>

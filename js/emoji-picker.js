@@ -1,7 +1,7 @@
 // emoji-picker.js — 이모지 선택창
-import { state } from './state.js?v=20261111a';
-import { db, doc, setDoc, updateDoc } from './firebase.js?v=20261111a';
-import { closeModal, openModal, showToast } from './core.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
+import { db, doc, setDoc, updateDoc } from './firebase.js?v=20261111b';
+import { closeModal, openModal, showToast } from './core.js?v=20261111b';
 
 const EMOJI_LIST_LOGO = ['🏫','🌟','🎓','🌈','🏆','🎯','📚','✏️','🖊️','🎨','🌱','🌻','🌍','🦋','🐝','🎪','🎡','🏠','🌙','☀️','🪙','💫','🔥','💡','🎵','🎶','🎮','🚀','🌺','🍀','🧩','🎭','🏅','🌠','⭐','🌊','🍃','🦚','🦜','🌴','🎋','🪴','🏔️','🌅','🌄','🌇','🎠','🎪','🧸','🪆'];
 const EMOJI_CATS = {
@@ -107,8 +107,6 @@ window.filterEmojiGrid = function(query) {
   found = [...new Set(found)].filter(e => EMOJI_LIST_AVATAR.includes(e));
   _renderEmojiButtons(found.length ? found : EMOJI_LIST_AVATAR);
 };
-
-function renderEmojiGrid(list) { _renderEmojiPicker(list, list === EMOJI_LIST_AVATAR); }
 
 function _renderEmojiButtons(list) {
   document.getElementById('emojiGrid').innerHTML = list.map(e => `

@@ -1,11 +1,11 @@
 // points.js — 학생: 내 포인트
-import { state } from './state.js?v=20261111a';
-import { collection, db, getDocs, query, where } from './firebase.js?v=20261111a';
-import { calcLevel, formatTime, getAbilityRank } from './level.js?v=20261111a';
-import { reloadStudents } from './realtime.js?v=20261111a';
-import { FRAME_DATA } from './frames.js?v=20261111a';
-import { getTitleBadgeHtml } from './titles.js?v=20261111a';
-import { buildCharHtml } from './avatar.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
+import { collection, db, getDocs, limit, orderBy, query, where } from './firebase.js?v=20261111b';
+import { calcLevel, formatTime, getAbilityRank } from './level.js?v=20261111b';
+import { reloadStudents } from './realtime.js?v=20261111b';
+import { FRAME_DATA } from './frames.js?v=20261111b';
+import { getTitleBadgeHtml } from './titles.js?v=20261111b';
+import { buildCharHtml } from './avatar.js?v=20261111b';
 
 // ===== 학생: 내 포인트 =====
 export async function renderMyPoints() {
@@ -274,10 +274,18 @@ export async function renderMyPoints() {
     }
   } catch(e) { console.error('교환 현황 오류:', e); }
 
-  // 포인트 내역 - 세션 캐시
+  // 포인트 내역 (최근 10개만 표시)
+  // (읽기 절약) 최근 10개만 서버에 요청. 이 조회에는 Firestore 복합 색인(history: studentId + createdAt 내림차순)이
+  // 필요해요. 색인이 아직 없으면 예전처럼 내 내역 전체를 읽어서 보여줘요 (화면은 똑같이 동작).
   if (!window._myHistory) {
-    const _hSnap = await getDocs(query(collection(db, 'history'), where('studentId', '==', state.currentUser.uid)));
-    window._myHistory = _hSnap.docs.map(d => d.data());
+    try {
+      const _hSnap = await getDocs(query(collection(db, 'history'), where('studentId', '==', state.currentUser.uid), orderBy('createdAt', 'desc'), limit(10)));
+      window._myHistory = _hSnap.docs.map(d => d.data());
+    } catch (e) {
+      if (e?.code === 'failed-precondition') console.warn('포인트 내역 색인이 없어 전체를 읽어요. 콘솔 링크로 색인을 만들면 읽기가 줄어요:', e.message);
+      const _hSnap = await getDocs(query(collection(db, 'history'), where('studentId', '==', state.currentUser.uid)));
+      window._myHistory = _hSnap.docs.map(d => d.data());
+    }
   }
   const hSnap = { docs: window._myHistory.map(d => ({ data: () => d })) };
   const history = hSnap.docs

@@ -1,13 +1,13 @@
 // dungeon-admin.js — 던전 관리 (교사: 설정·이미지 라이브러리·보스)
-import { state } from './state.js?v=20261111a';
+import { state } from './state.js?v=20261111b';
 import {
   collection, db, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261111a';
-import { closeModal, showToast } from './core.js?v=20261111a';
-import { getTodayStr } from './attendance.js?v=20261111a';
+} from './firebase.js?v=20261111b';
+import { closeModal, showToast } from './core.js?v=20261111b';
+import { getTodayStr } from './attendance.js?v=20261111b';
 import {
   loadQuizDungeonBoss, loadQuizDungeonConfig, loadQuizDungeonManageStatus
-} from './quiz-dungeon.js?v=20261111a';
+} from './quiz-dungeon.js?v=20261111b';
 
 // ===================================================
 // ⚔️ 던전 시스템
@@ -79,7 +79,6 @@ window.resetDungeonDates = async function() {
 
 // ===== 교사: 던전 관리 =====
 // ===== GitHub 이미지 선택 =====
-let _githubImgCache = {};  // 폴더별 캐시 { mon: [], bg: [] }
 let _githubImgTargetId = null;
 let _githubImgIsMonster = false;
 
