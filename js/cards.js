@@ -1,17 +1,17 @@
 // cards.js — 칭찬/벌점 카드 관리·부여·내역·회수
-import { state } from './state.js?v=20261117b';
+import { state } from './state.js?v=20261117c';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, limit,
   orderBy, query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261117b';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261117b';
-import { formatTime } from './level.js?v=20261117b';
-import { discountHtml } from './shop.js?v=20261117b';
-import { reloadRewards, reloadStudents } from './realtime.js?v=20261117b';
-import { renderDashboard } from './dashboard.js?v=20261117b';
-import { makeAbilityTags } from './titles.js?v=20261117b';
-import { buildCharHtml } from './avatar.js?v=20261117b';
-import { fadePanel } from './ui.js?v=20261117b';
+} from './firebase.js?v=20261117c';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261117c';
+import { formatTime } from './level.js?v=20261117c';
+import { discountHtml } from './shop.js?v=20261117c';
+import { reloadRewards, reloadStudents } from './realtime.js?v=20261117c';
+import { renderDashboard } from './dashboard.js?v=20261117c';
+import { makeAbilityTags } from './titles.js?v=20261117c';
+import { buildCharHtml } from './avatar.js?v=20261117c';
+import { fadePanel } from './ui.js?v=20261117c';
 
 export let praiseCards = [];
 let currentCardTab = 'praise';
@@ -307,8 +307,8 @@ window.giveCard = async function() {
       // 1단계: 능력치 + 카드 포인트만 업데이트 (abilityRankGranted 제외)
       await updateDoc(doc(db, 'students', s.id), {
         points: increment(delta),
-        // 칭찬카드(양수)만 누적포인트 증가, 벌점카드는 누적포인트 유지
-        ...(delta > 0 ? { accumulatedPoints: increment(delta) } : {}),
+        // 칭찬카드는 누적포인트도 늘리고, 벌점카드는 누적포인트도 함께 깎음
+        accumulatedPoints: increment(delta),
         ...abilityUpdate
       });
 
@@ -353,7 +353,7 @@ window.giveCard = async function() {
         studentId: s.id, studentName: s.name,
         cardId: c.id, cardTitle: c.title, cardEmoji: c.emoji||'',
         cardType: c.type, type: c.type, cardPoint: c.point,
-        delta, abilities: c.abilities || {},
+        delta, accumDelta: delta, abilities: c.abilities || {},
         memo, givenAt: serverTimestamp(), createdAt: serverTimestamp()
       });
       await addDoc(collection(db, 'history'), {
@@ -385,6 +385,14 @@ window.giveCard = async function() {
   }
 };
 
+// 카드가 누적포인트를 실제로 얼마나 바꿨는지 (회수할 때 그만큼만 되돌림)
+//  · 새 카드: accumDelta 에 기록돼 있음 (벌점카드도 누적포인트를 깎음)
+//  · 예전 카드: 칭찬카드만 누적포인트를 올렸고 벌점카드는 누적포인트를 건드리지 않았음
+export function accumDeltaOf(cardData, delta) {
+  if (typeof cardData?.accumDelta === 'number') return cardData.accumDelta;
+  return delta > 0 ? delta : 0;
+}
+
 window.revokeCard = async function(giveId, studentId, delta, studentName) {
   if (!confirm('이 카드를 회수할까요? 포인트와 능력치도 원상복구됩니다.')) return;
   try {
@@ -398,7 +406,7 @@ window.revokeCard = async function(giveId, studentId, delta, studentName) {
     await deleteDoc(doc(db, 'givenCards', giveId));
     await updateDoc(doc(db, 'students', studentId), {
       points: increment(-delta),
-      accumulatedPoints: increment(-delta),
+      accumulatedPoints: increment(-accumDeltaOf(cardData, delta)),
       ...abilityRestore
     });
     const abMsg = Object.keys(abilities).length
@@ -779,7 +787,7 @@ window.reclaimGivenCard = async function(givenCardId) {
     // 포인트 역산
     const update = {
       points: increment(-item.delta),
-      accumulatedPoints: increment(-item.delta)
+      accumulatedPoints: increment(-accumDeltaOf(item, item.delta))
     };
     // 능력치 역산
     if (item.abilities) {
@@ -898,7 +906,7 @@ window.revokeCardFromList = async function(giveId, studentId, delta, studentName
     await deleteDoc(doc(db, 'givenCards', giveId));
     await updateDoc(doc(db, 'students', studentId), {
       points: increment(-delta),
-      accumulatedPoints: increment(-delta),
+      accumulatedPoints: increment(-accumDeltaOf(cardData, delta)),
       ...abilityRestore
     });
     const abMsg = Object.keys(abilities).length

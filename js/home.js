@@ -1,20 +1,20 @@
 // home.js — 홈 화면(간판, 교사/학생 랭킹)
-import { state } from './state.js?v=20261117b';
-import { collection, db, getDocs } from './firebase.js?v=20261117b';
-import { getCfgSite, loadTitleInventoryCache } from './core.js?v=20261117b';
-import { calcLevel } from './level.js?v=20261117b';
-import { reloadStudents } from './realtime.js?v=20261117b';
-import { renderStudentPendingExchanges } from './exchanges.js?v=20261117b';
-import { getTodayStr, updateAttendBtn } from './attendance.js?v=20261117b';
-import { renderTodayRolesBox } from './roles.js?v=20261117b';
-import { updateBoardBadge } from './board.js?v=20261117b';
-import { updateDungeonBadge, updateMyRolesBadge } from './dungeon.js?v=20261117b';
-import { FRAME_DATA, loadCustomFrames } from './frames.js?v=20261117b';
-import { getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261117b';
-import { buildCharHtml, getStudentChar, loadAvatarItemList } from './avatar.js?v=20261117b';
-import { loadNotice } from './notice.js?v=20261117b';
-import { updateFloatingCheckBtn } from './checklist.js?v=20261117b';
-import { loadPetList } from './pets.js?v=20261117b';
+import { state } from './state.js?v=20261117c';
+import { collection, db, getDocs } from './firebase.js?v=20261117c';
+import { getCfgSite, loadTitleInventoryCache } from './core.js?v=20261117c';
+import { calcLevel } from './level.js?v=20261117c';
+import { reloadStudents } from './realtime.js?v=20261117c';
+import { renderStudentPendingExchanges } from './exchanges.js?v=20261117c';
+import { getTodayStr, updateAttendBtn } from './attendance.js?v=20261117c';
+import { renderTodayRolesBox } from './roles.js?v=20261117c';
+import { updateBoardBadge } from './board.js?v=20261117c';
+import { updateDungeonBadge, updateMyRolesBadge } from './dungeon.js?v=20261117c';
+import { FRAME_DATA, loadCustomFrames } from './frames.js?v=20261117c';
+import { getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261117c';
+import { buildCharHtml, getStudentChar, loadAvatarItemList } from './avatar.js?v=20261117c';
+import { loadNotice } from './notice.js?v=20261117c';
+import { updateFloatingCheckBtn } from './checklist.js?v=20261117c';
+import { loadPetList } from './pets.js?v=20261117c';
 
 // ===== 간판 데이터 로드 =====
 export async function loadBanner(isTeacher) {

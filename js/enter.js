@@ -1,21 +1,21 @@
 // enter.js — 로그인 후 앱 진입, 대기 중 알림 확인, 로그아웃
-import { state } from './state.js?v=20261117b';
+import { state } from './state.js?v=20261117c';
 import {
   auth, collection, db, deleteDoc, doc, getDocs, onSnapshot, query, signOut, updateDoc, where
-} from './firebase.js?v=20261117b';
-import { getCfgTeacher, getMyStudentData } from './core.js?v=20261117b';
-import { resetAutoLogoutTimer } from './auth.js?v=20261117b';
-import { loadSiteSettings } from './site-config.js?v=20261117b';
+} from './firebase.js?v=20261117c';
+import { getCfgTeacher, getMyStudentData } from './core.js?v=20261117c';
+import { resetAutoLogoutTimer } from './auth.js?v=20261117c';
+import { loadSiteSettings } from './site-config.js?v=20261117c';
 import {
   listenExchanges, listenMessages, listenRewards, listenStudents, pushNotif
-} from './realtime.js?v=20261117b';
-import { renderStudentPendingExchanges } from './exchanges.js?v=20261117b';
-import { loadAttendPoint } from './attendance.js?v=20261117b';
-import { checkMissedRoles } from './roles.js?v=20261117b';
-import { escapeHtml } from './board.js?v=20261117b';
-import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261117b';
-import { initStudentAvatar } from './avatar.js?v=20261117b';
-import { stopWatchingClosure, watchClosure } from './closure.js?v=20261117b';
+} from './realtime.js?v=20261117c';
+import { renderStudentPendingExchanges } from './exchanges.js?v=20261117c';
+import { loadAttendPoint } from './attendance.js?v=20261117c';
+import { checkMissedRoles } from './roles.js?v=20261117c';
+import { escapeHtml } from './board.js?v=20261117c';
+import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261117c';
+import { initStudentAvatar } from './avatar.js?v=20261117c';
+import { stopWatchingClosure, watchClosure } from './closure.js?v=20261117c';
 
 // ===== 앱 진입 =====
 export async function enterApp() {
@@ -79,6 +79,7 @@ export async function enterApp() {
           pushNotif('⚠️ 벌점 카드를 받았어요', teacherEmoji,
             `선생님께서 <strong>'${c.cardTitle}'</strong> 벌점 카드를 부여하셨어요.<br>` +
             `<span style="color:#e11d48;font-weight:700;">-${c.cardPoint}🪙</span>` +
+            `<br><span style="font-size:12px;color:#e11d48;">누적 포인트도 ${c.cardPoint}만큼 함께 줄었어요</span>` +
             `${c.memo ? `<br><span style="font-size:12px;color:var(--text-secondary);">메모: ${c.memo}</span>` : ''}`
           );
         }

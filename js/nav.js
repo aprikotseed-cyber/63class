@@ -1,24 +1,24 @@
 // nav.js — 페이지 이동(네비게이션)
-import { state } from './state.js?v=20261117b';
-import { db, deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from './firebase.js?v=20261117b';
-import { getCfgTeacher } from './core.js?v=20261117b';
-import { renderShopPage } from './shop.js?v=20261117b';
-import { renderDashboard } from './dashboard.js?v=20261117b';
-import { renderStudentList } from './students.js?v=20261117b';
-import { renderCardsPage } from './cards.js?v=20261117b';
-import { renderExchanges } from './exchanges.js?v=20261117b';
-import { renderMessages } from './messages.js?v=20261117b';
-import { renderStudentHome, renderTeacherHome } from './home.js?v=20261117b';
-import { renderMyRolesPage, renderRoleManagePage } from './roles.js?v=20261117b';
-import { renderBoardPage } from './board.js?v=20261117b';
-import { renderDecorShop, renderMyInventory } from './inventory.js?v=20261117b';
-import { renderDungeonManage } from './dungeon-admin.js?v=20261117b';
-import { renderQuizDungeonSection } from './quiz-dungeon.js?v=20261117b';
-import { renderBooksPage } from './books.js?v=20261117b';
-import { renderDecorManage, renderTitlesPage } from './titles.js?v=20261117b';
-import { renderStudentSettings } from './profile.js?v=20261117b';
-import { renderMyPoints } from './points.js?v=20261117b';
-import { renderClosureSettings } from './closure.js?v=20261117b';
+import { state } from './state.js?v=20261117c';
+import { db, deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from './firebase.js?v=20261117c';
+import { getCfgTeacher } from './core.js?v=20261117c';
+import { renderShopPage } from './shop.js?v=20261117c';
+import { renderDashboard } from './dashboard.js?v=20261117c';
+import { renderStudentList } from './students.js?v=20261117c';
+import { renderCardsPage } from './cards.js?v=20261117c';
+import { renderExchanges } from './exchanges.js?v=20261117c';
+import { renderMessages } from './messages.js?v=20261117c';
+import { renderStudentHome, renderTeacherHome } from './home.js?v=20261117c';
+import { renderMyRolesPage, renderRoleManagePage } from './roles.js?v=20261117c';
+import { renderBoardPage } from './board.js?v=20261117c';
+import { renderDecorShop, renderMyInventory } from './inventory.js?v=20261117c';
+import { renderDungeonManage } from './dungeon-admin.js?v=20261117c';
+import { renderQuizDungeonSection } from './quiz-dungeon.js?v=20261117c';
+import { renderBooksPage } from './books.js?v=20261117c';
+import { renderDecorManage, renderTitlesPage } from './titles.js?v=20261117c';
+import { renderStudentSettings } from './profile.js?v=20261117c';
+import { renderMyPoints } from './points.js?v=20261117c';
+import { renderClosureSettings } from './closure.js?v=20261117c';
 
 // ===== 네비게이션 (사이트 설정 연동) =====
 window.navigate = async function(page) {
