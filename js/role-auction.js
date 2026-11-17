@@ -1,12 +1,12 @@
 // role-auction.js — 1인1역 경매
-import { state } from './state.js?v=20261117a';
+import { state } from './state.js?v=20261117b';
 import {
   addDoc, collection, db, doc, getDoc, getDocs, increment, query, serverTimestamp, updateDoc,
   where
-} from './firebase.js?v=20261117a';
-import { getMyStudentData, openModal, showToast } from './core.js?v=20261117a';
-import { DAY_NAMES, loadRoles, renderRoleManagePage, roles } from './roles.js?v=20261117a';
-import { escapeHtml } from './board.js?v=20261117a';
+} from './firebase.js?v=20261117b';
+import { getMyStudentData, openModal, showToast } from './core.js?v=20261117b';
+import { DAY_NAMES, loadRoles, renderRoleManagePage, roles } from './roles.js?v=20261117b';
+import { escapeHtml } from './board.js?v=20261117b';
 
 // ===== 1인1역 경매 =====
 // 규칙: 입찰해도 포인트는 빠지지 않고, 확정(낙찰) 시 낙찰된 역할의 금액만 차감(소멸). 한 학생은 한 역할만 낙찰.

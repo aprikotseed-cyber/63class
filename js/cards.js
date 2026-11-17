@@ -1,17 +1,17 @@
 // cards.js — 칭찬/벌점 카드 관리·부여·내역·회수
-import { state } from './state.js?v=20261117a';
+import { state } from './state.js?v=20261117b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, limit,
   orderBy, query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261117a';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261117a';
-import { formatTime } from './level.js?v=20261117a';
-import { discountHtml } from './shop.js?v=20261117a';
-import { reloadRewards, reloadStudents } from './realtime.js?v=20261117a';
-import { renderDashboard } from './dashboard.js?v=20261117a';
-import { makeAbilityTags } from './titles.js?v=20261117a';
-import { buildCharHtml } from './avatar.js?v=20261117a';
-import { fadePanel } from './ui.js?v=20261117a';
+} from './firebase.js?v=20261117b';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261117b';
+import { formatTime } from './level.js?v=20261117b';
+import { discountHtml } from './shop.js?v=20261117b';
+import { reloadRewards, reloadStudents } from './realtime.js?v=20261117b';
+import { renderDashboard } from './dashboard.js?v=20261117b';
+import { makeAbilityTags } from './titles.js?v=20261117b';
+import { buildCharHtml } from './avatar.js?v=20261117b';
+import { fadePanel } from './ui.js?v=20261117b';
 
 export let praiseCards = [];
 let currentCardTab = 'praise';

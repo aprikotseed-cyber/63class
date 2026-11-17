@@ -1,13 +1,13 @@
 // exchanges.js — 보상 교환 신청 관리
-import { state } from './state.js?v=20261117a';
+import { state } from './state.js?v=20261117b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, increment, serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261117a';
-import { showToast } from './core.js?v=20261117a';
-import { formatTime } from './level.js?v=20261117a';
-import { reloadStudents } from './realtime.js?v=20261117a';
-import { renderDashboard } from './dashboard.js?v=20261117a';
-import { renderStudentHome } from './home.js?v=20261117a';
+} from './firebase.js?v=20261117b';
+import { showToast } from './core.js?v=20261117b';
+import { formatTime } from './level.js?v=20261117b';
+import { reloadStudents } from './realtime.js?v=20261117b';
+import { renderDashboard } from './dashboard.js?v=20261117b';
+import { renderStudentHome } from './home.js?v=20261117b';
 
 // ===== 교환 신청 관리 =====
 export function renderExchanges() {

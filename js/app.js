@@ -1,46 +1,48 @@
 // app.js — 시작점: 모든 기능을 불러오고 자동 로그인 처리
-import { state } from './state.js?v=20261117a';
-import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from './firebase.js?v=20261117a';
-import { enterApp } from './enter.js?v=20261117a';
-import { applyLoginBg, applySiteLogoImg } from './site-config.js?v=20261117a';
-import { hideLoading } from './ui.js?v=20261117a';
-import './core.js?v=20261117a';
-import './level.js?v=20261117a';
-import './auth.js?v=20261117a';
-import './emoji-picker.js?v=20261117a';
-import './shop.js?v=20261117a';
-import './nav.js?v=20261117a';
-import './realtime.js?v=20261117a';
-import './dashboard.js?v=20261117a';
-import './students.js?v=20261117a';
-import './admin.js?v=20261117a';
-import './cards.js?v=20261117a';
-import './exchanges.js?v=20261117a';
-import './messages.js?v=20261117a';
-import './home.js?v=20261117a';
-import './attendance.js?v=20261117a';
-import './roles.js?v=20261117a';
-import './board.js?v=20261117a';
-import './role-auction.js?v=20261117a';
-import './dungeon.js?v=20261117a';
-import './frames.js?v=20261117a';
-import './inventory.js?v=20261117a';
-import './dungeon-admin.js?v=20261117a';
-import './quiz-dungeon.js?v=20261117a';
-import './books.js?v=20261117a';
-import './titles.js?v=20261117a';
-import './avatar.js?v=20261117a';
-import './avatar-shop.js?v=20261117a';
-import './notice.js?v=20261117a';
-import './student-detail.js?v=20261117a';
-import './profile.js?v=20261117a';
-import './points.js?v=20261117a';
-import './checklist.js?v=20261117a';
-import './pets.js?v=20261117a';
-import './student-view.js?v=20261117a';
-import './crowdfunding.js?v=20261117a';
-import './backup.js?v=20261117a';
-import './cleanup.js?v=20261117a';
+import { state } from './state.js?v=20261117b';
+import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from './firebase.js?v=20261117b';
+import { enterApp } from './enter.js?v=20261117b';
+import { applyLoginBg, applySiteLogoImg } from './site-config.js?v=20261117b';
+import { hideLoading } from './ui.js?v=20261117b';
+import { isSiteClosed, showClosedGate } from './closure.js?v=20261117b';
+import { startVersionCheck } from './version-check.js?v=20261117b';
+import './core.js?v=20261117b';
+import './level.js?v=20261117b';
+import './auth.js?v=20261117b';
+import './emoji-picker.js?v=20261117b';
+import './shop.js?v=20261117b';
+import './nav.js?v=20261117b';
+import './realtime.js?v=20261117b';
+import './dashboard.js?v=20261117b';
+import './students.js?v=20261117b';
+import './admin.js?v=20261117b';
+import './cards.js?v=20261117b';
+import './exchanges.js?v=20261117b';
+import './messages.js?v=20261117b';
+import './home.js?v=20261117b';
+import './attendance.js?v=20261117b';
+import './roles.js?v=20261117b';
+import './board.js?v=20261117b';
+import './role-auction.js?v=20261117b';
+import './dungeon.js?v=20261117b';
+import './frames.js?v=20261117b';
+import './inventory.js?v=20261117b';
+import './dungeon-admin.js?v=20261117b';
+import './quiz-dungeon.js?v=20261117b';
+import './books.js?v=20261117b';
+import './titles.js?v=20261117b';
+import './avatar.js?v=20261117b';
+import './avatar-shop.js?v=20261117b';
+import './notice.js?v=20261117b';
+import './student-detail.js?v=20261117b';
+import './profile.js?v=20261117b';
+import './points.js?v=20261117b';
+import './checklist.js?v=20261117b';
+import './pets.js?v=20261117b';
+import './student-view.js?v=20261117b';
+import './crowdfunding.js?v=20261117b';
+import './backup.js?v=20261117b';
+import './cleanup.js?v=20261117b';
 
 // 페이지 로드 시 로그인 화면에도 사이트 설정 반영
 (async function initLoginScreen() {
@@ -85,6 +87,13 @@ onAuthStateChanged(auth, async (user) => {
     await enterApp();
     hideLoading();
   } else {
+    // 홈페이지 문이 닫혀 있으면 안내 화면만
+    if (await isSiteClosed()) {
+      hideLoading();
+      document.getElementById('loginPage').classList.remove('hidden');
+      showClosedGate(user.uid, '');
+      return;
+    }
     try {
       const sDoc = await getDoc(doc(db, 'students', user.uid));
       if (sDoc.exists()) {
@@ -103,3 +112,6 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
+// 새 버전이 올라오면 켜져 있는 화면도 알아서 새로고침
+startVersionCheck();
