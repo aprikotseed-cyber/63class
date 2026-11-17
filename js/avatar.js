@@ -1,10 +1,10 @@
 // avatar.js — 아바타 시스템 (데이터·교사 관리)
-import { state } from './state.js?v=20261111d';
+import { state } from './state.js?v=20261117a';
 import {
   collection, db, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111d';
-import { closeModal, openModal, showToast } from './core.js?v=20261111d';
-import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261111d';
+} from './firebase.js?v=20261117a';
+import { closeModal, openModal, showToast } from './core.js?v=20261117a';
+import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261117a';
 
 // ===================================================
 // 🧑 아바타 시스템 v4 (Firestore 목록 + GitHub 이미지)

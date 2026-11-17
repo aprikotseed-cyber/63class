@@ -1,16 +1,16 @@
 // avatar-shop.js — 아바타 상점 (학생)
-import { state } from './state.js?v=20261111d';
+import { state } from './state.js?v=20261117a';
 import {
   addDoc, collection, db, doc, getDocs, increment, query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261111d';
-import { getMyStudentData, showToast } from './core.js?v=20261111d';
-import { renderStudentHome } from './home.js?v=20261111d';
+} from './firebase.js?v=20261117a';
+import { getMyStudentData, showToast } from './core.js?v=20261117a';
+import { renderStudentHome } from './home.js?v=20261117a';
 import {
   AVATAR_CATS, AVATAR_CAT_ICONS, AVATAR_MANNEQUIN, avatarInventory, avatarItemImg, avatarItemList,
   loadAvatarEquipped, loadAvatarInventory, loadAvatarItemList
-} from './avatar.js?v=20261111d';
-import { renderStudentSettings } from './profile.js?v=20261111d';
-import { renderMyPoints } from './points.js?v=20261111d';
+} from './avatar.js?v=20261117a';
+import { renderStudentSettings } from './profile.js?v=20261117a';
+import { renderMyPoints } from './points.js?v=20261117a';
 
 // ===================================================
 // 학생: 아바타 상점 (레이어 미리보기 + 구매 시스템)

@@ -1,16 +1,16 @@
 // roles.js — 1인1역 시스템
-import { state } from './state.js?v=20261111d';
+import { state } from './state.js?v=20261117a';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, increment, limit, onSnapshot, orderBy,
   query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261111d';
-import { closeModal, openModal, showToast } from './core.js?v=20261111d';
-import { formatTime } from './level.js?v=20261111d';
-import { reloadStudents } from './realtime.js?v=20261111d';
-import { renderDashboard } from './dashboard.js?v=20261111d';
-import { getTodayStr } from './attendance.js?v=20261111d';
-import { buildStudentAuctionHtml } from './role-auction.js?v=20261111d';
-import { getCurrentWeekKey } from './books.js?v=20261111d';
+} from './firebase.js?v=20261117a';
+import { closeModal, openModal, showToast } from './core.js?v=20261117a';
+import { formatTime } from './level.js?v=20261117a';
+import { reloadStudents } from './realtime.js?v=20261117a';
+import { renderDashboard } from './dashboard.js?v=20261117a';
+import { getTodayStr } from './attendance.js?v=20261117a';
+import { buildStudentAuctionHtml } from './role-auction.js?v=20261117a';
+import { getCurrentWeekKey } from './books.js?v=20261117a';
 
 // ===== 1인1역 시스템 =====
 export const DAY_NAMES = ['','월','화','수','목','금','토','일'];

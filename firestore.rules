@@ -15,9 +15,10 @@ service cloud.firestore {
 
     // 사이트 설정·선생님 아이디 등: 로그인 화면에서도 읽어야 해서 누구나 읽기 가능
     // (선생님 비밀번호는 더 이상 여기 저장하지 않아요)
+    // closure(홈페이지 문 열기·닫기)는 선생님만 바꿀 수 있어요.
     match /config/{docId} {
       allow read: if true;
-      allow write: if signedIn();
+      allow write: if signedIn() && (docId != 'closure' || isTeacher());
     }
 
     // 학생 비밀번호 기록: 선생님만 읽을 수 있어요.

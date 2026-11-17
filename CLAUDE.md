@@ -15,3 +15,4 @@
 - 비밀번호: 학생 비밀번호 기록은 `studentSecrets/{학생ID}` (js/accounts.js). 학생 문서에 `pwHint`를 쓰지 않아요. 선생님 비밀번호는 어디에도 저장하지 않아요.
 - 선생님 화면에서 학생 계정으로 로그인/생성할 때는 반드시 `getHelperAuth()`(보조 창구)를 써요. 기본 `auth`로 하면 선생님 로그인이 학생으로 바뀌어요.
 - 보안 규칙은 `firestore.rules` (콘솔에 직접 붙여 넣음). 새 컬렉션은 로그인 사용자 전체 허용 규칙에 걸려요. 비밀 데이터는 studentSecrets 처럼 따로 match 를 둬요.
+- 홈페이지 임시 폐쇄: `config/closure` {closed, message} (js/closure.js). 규칙상 선생님만 쓸 수 있어요. 로그인 때 watchClosure(), 로그아웃 때 stopWatchingClosure().

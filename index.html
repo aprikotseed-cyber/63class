@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261111d">
+<link rel="stylesheet" href="css/style.css?v=20261117a">
 </head>
 <body>
 
@@ -87,6 +87,11 @@
       <button id="backToTeacherBtn" class="btn btn-sm" onclick="exitStudentView()"
         style="display:none;background:#fef9c3;color:#a16207;border:1.5px solid #fcd34d;font-size:12px;padding:5px 10px;font-weight:700;">
         🔙 교사로 돌아가기
+      </button>
+      <!-- 교사 전용: 학생 화면이 닫혀 있을 때 표시 -->
+      <button id="closureBadge" class="btn btn-sm hidden" onclick="navigate('settings')" title="설정에서 다시 열 수 있어요"
+        style="background:#fee2e2;color:#b91c1c;border:1.5px solid #fca5a5;font-size:12px;padding:5px 10px;font-weight:700;white-space:nowrap;">
+        🔒 학생 화면 닫힘
       </button>
       <div class="nav-user">
         <div class="nav-avatar" id="navAvatar" onclick="openAvatarEmojiPicker()" title="프로필 이모지 변경" style="cursor:pointer;font-size:20px;">?</div>
@@ -450,6 +455,26 @@
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:20px;" class="teacher-settings-flex">
+          <!-- 홈페이지 문 열기·닫기 (임시 폐쇄) -->
+          <div class="card" id="closureCard">
+            <div class="settings-section">
+              <h3>🚪 홈페이지 문 열기·닫기</h3>
+              <div id="closureStatus" style="font-size:14px;margin-bottom:12px;">확인 중...</div>
+              <div class="form-group">
+                <label>문을 닫았을 때 학생에게 보여줄 안내 문구</label>
+                <textarea id="closureMessage" rows="3" oninput="this.dataset.dirty='1'" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:14px;line-height:1.6;resize:vertical;box-sizing:border-box;"></textarea>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-danger" id="closureToggleBtn" onclick="toggleSiteClosure()">🔒 문 닫기</button>
+                <button class="btn btn-secondary" onclick="saveClosureMessage()">문구 저장</button>
+                <button class="btn btn-secondary" onclick="resetClosureMessage()">기본 문구로</button>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:10px;line-height:1.6;">
+                문을 닫으면 지금 접속해 있는 학생 화면도 바로 뿌옇게 가려지고 아무 메뉴도 누를 수 없어요. 선생님 화면은 그대로예요.<br>
+                학생 데이터(포인트·기록 등)는 그대로 남고, 다시 열면 바로 평소처럼 쓸 수 있어요.
+              </div>
+            </div>
+          </div>
           <!-- 홈페이지 이름·로고 설정 -->
           <div class="card">
             <div class="settings-section">
@@ -3095,7 +3120,7 @@
 <!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
-<script type="module" src="js/app.js?v=20261111d"></script>
+<script type="module" src="js/app.js?v=20261117a"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
 </html>
