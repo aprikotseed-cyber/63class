@@ -1656,3 +1656,19 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); }
 @media (max-width: 640px) {
   .decor-top-tab { padding-left: 6px !important; padding-right: 6px !important; font-size: 12px !important; }
 }
+
+/* ===== 홈페이지 임시 폐쇄 화면 ===== */
+#closedOverlay {
+  position: fixed; inset: 0; z-index: 100000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(248, 250, 252, 0.55);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+#closedOverlay .closed-card {
+  max-width: 460px; width: 100%; text-align: center;
+  background: var(--surface, #fff); border-radius: 20px; padding: 32px 28px 24px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18); border: 1px solid var(--border, #e2e8f0);
+}
+#closedOverlay .closed-icon { font-size: 52px; line-height: 1; margin-bottom: 12px; }
+#closedOverlay .closed-title { font-size: 20px; font-weight: 800; margin-bottom: 12px; color: #b91c1c; }
+#closedOverlay .closed-message { font-size: 16px; line-height: 1.75; color: var(--text-primary, #1e293b); margin-bottom: 20px; word-break: keep-all; }

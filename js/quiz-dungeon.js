@@ -1,10 +1,10 @@
 // quiz-dungeon.js — 문제 던전
-import { state } from './state.js?v=20261111d';
+import { state } from './state.js?v=20261117a';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, increment, serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261111d';
-import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261111d';
-import { pushNotif } from './realtime.js?v=20261111d';
+} from './firebase.js?v=20261117a';
+import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261117a';
+import { pushNotif } from './realtime.js?v=20261117a';
 
 // ===================================================
 // 📚 문제 던전 시스템

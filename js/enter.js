@@ -1,23 +1,25 @@
 // enter.js — 로그인 후 앱 진입, 대기 중 알림 확인, 로그아웃
-import { state } from './state.js?v=20261111d';
+import { state } from './state.js?v=20261117a';
 import {
   auth, collection, db, deleteDoc, doc, getDocs, onSnapshot, query, signOut, updateDoc, where
-} from './firebase.js?v=20261111d';
-import { getCfgTeacher, getMyStudentData } from './core.js?v=20261111d';
-import { resetAutoLogoutTimer } from './auth.js?v=20261111d';
-import { loadSiteSettings } from './site-config.js?v=20261111d';
+} from './firebase.js?v=20261117a';
+import { getCfgTeacher, getMyStudentData } from './core.js?v=20261117a';
+import { resetAutoLogoutTimer } from './auth.js?v=20261117a';
+import { loadSiteSettings } from './site-config.js?v=20261117a';
 import {
   listenExchanges, listenMessages, listenRewards, listenStudents, pushNotif
-} from './realtime.js?v=20261111d';
-import { renderStudentPendingExchanges } from './exchanges.js?v=20261111d';
-import { loadAttendPoint } from './attendance.js?v=20261111d';
-import { checkMissedRoles } from './roles.js?v=20261111d';
-import { escapeHtml } from './board.js?v=20261111d';
-import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261111d';
-import { initStudentAvatar } from './avatar.js?v=20261111d';
+} from './realtime.js?v=20261117a';
+import { renderStudentPendingExchanges } from './exchanges.js?v=20261117a';
+import { loadAttendPoint } from './attendance.js?v=20261117a';
+import { checkMissedRoles } from './roles.js?v=20261117a';
+import { escapeHtml } from './board.js?v=20261117a';
+import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261117a';
+import { initStudentAvatar } from './avatar.js?v=20261117a';
+import { stopWatchingClosure, watchClosure } from './closure.js?v=20261117a';
 
 // ===== 앱 진입 =====
 export async function enterApp() {
+  watchClosure(); // 홈페이지 문(임시 폐쇄) 상태를 실시간으로 지켜봄
   if (window._appEntered) return; // 로그인 직후 studentLogin과 onAuthStateChanged가 둘 다 호출하면 알림이 2번 뜨는 문제 방지
   window._appEntered = true;
   document.getElementById('loginPage').classList.add('hidden');
@@ -343,6 +345,7 @@ async function checkPendingTeacherBoardNotifs() {
 
 window.logout = async function() {
   window._appEntered = false;
+  stopWatchingClosure();
   window._shownNotifIds = new Set();
   if (state.unsubMessages)  state.unsubMessages();
   if (state.unsubStudents)  state.unsubStudents();
