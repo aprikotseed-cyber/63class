@@ -4,15 +4,17 @@
 // · 로그인한 사람은 이 문서 하나만 실시간으로 지켜봐요 (읽기 1건 + 바뀔 때마다 1건)
 // · 닫혀 있으면 학생 화면 전체를 뿌옇게 가리고 아무것도 누를 수 없게 해요.
 //   선생님(학생 뷰로 보고 있을 때 포함)은 가리지 않고, 맨 위에 "학생 화면 닫힘" 표시만 보여요.
-import { state } from './state.js?v=20261117a';
-import { auth, db, doc, onSnapshot, serverTimestamp, setDoc } from './firebase.js?v=20261117a';
-import { showToast } from './core.js?v=20261117a';
+import { state } from './state.js?v=20261117b';
+import { auth, db, doc, getDoc, onSnapshot, serverTimestamp, setDoc } from './firebase.js?v=20261117b';
+import { showToast } from './core.js?v=20261117b';
 
 export const DEFAULT_CLOSED_MESSAGE = '즐거운 학교 생활을 위해 운영하는 홈페이지가 오히려 학습 태도를 망치는 부작용을 발생시키고 있어 임시폐쇄합니다.';
 const closureRef = () => doc(db, 'config', 'closure');
 const OVERLAY_ID = 'closedOverlay';
 let _unsub = null;
 let _current = { closed: false, message: '' };
+let _gate = false;     // 문이 닫혀 있어 로그인만 하고 앱에는 못 들어온 상태
+let _wasClosed = null; // 직전 상태 (닫힘 → 열림 바뀔 때 새로고침하려고)
 let _inerted = [];
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -22,15 +24,42 @@ const isTeacherAccount = () => auth.currentUser?.email === 'teacher@ourclass.kr'
 export function watchClosure() {
   stopWatchingClosure();
   _unsub = onSnapshot(closureRef(), (snap) => {
+    // 서버가 확인한 상태만 믿어요 (몰래 고치려는 쓰기가 잠깐 화면에 먼저 반영되는 경우 무시)
+    if (snap.metadata.hasPendingWrites) return;
     _current = snap.exists() ? { closed: !!snap.data().closed, message: snap.data().message || '' } : { closed: false, message: '' };
+    // 학생: 닫혀 있다가 열리면 새로고침해서 평소 화면으로 (닫힌 동안 서버가 막아 끊긴 연결도 새로 이어져요)
+    if (_wasClosed === true && !_current.closed && !isTeacherAccount() && state.currentUser) {
+      location.reload();
+      return;
+    }
+    _wasClosed = _current.closed;
     applyClosure();
   }, (e) => console.warn('홈페이지 문 상태 확인 실패', e));
+}
+
+// 지금 문이 닫혀 있는지 (config 는 로그인 전에도 읽을 수 있어요)
+export async function isSiteClosed() {
+  try {
+    const snap = await getDoc(closureRef());
+    return snap.exists() && !!snap.data().closed;
+  } catch (e) { return false; }
+}
+
+// 문이 닫혀 있을 때 학생이 로그인하면: 앱에 들어가지 않고 가림 화면만 보여줘요.
+// (닫힌 동안은 서버가 학생의 데이터 읽기를 막아서 앱을 열 수 없어요) 문이 열리면 자동 새로고침.
+export function showClosedGate(uid, name) {
+  _gate = true;
+  state.currentUser = { role: 'student', name: name || '', uid };
+  _wasClosed = true;
+  watchClosure();
 }
 
 // 로그아웃할 때 호출
 export function stopWatchingClosure() {
   if (_unsub) { _unsub(); _unsub = null; }
   _current = { closed: false, message: '' };
+  _gate = false;
+  _wasClosed = null;
   hideClosedOverlay();
   const badge = document.getElementById('closureBadge');
   if (badge) badge.classList.add('hidden');

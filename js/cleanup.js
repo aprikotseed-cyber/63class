@@ -1,9 +1,9 @@
 // cleanup.js — 데이터 정리 도구 (교사 전용): 검사 → 결과 확인 → 백업 → 실행
-import { state } from './state.js?v=20261117a';
-import { collection, db, deleteField, doc, getDoc, getDocs, query, serverTimestamp, where, writeBatch } from './firebase.js?v=20261117a';
-import { closeModal, openModal, showToast } from './core.js?v=20261117a';
-import { SECRETS } from './accounts.js?v=20261117a';
-import { ORPHAN_COLLECTIONS, chunk, countByCol, oldReadNotifications, planOrphans } from './cleanup-plan.js?v=20261117a';
+import { state } from './state.js?v=20261117b';
+import { collection, db, deleteField, doc, getDoc, getDocs, query, serverTimestamp, where, writeBatch } from './firebase.js?v=20261117b';
+import { closeModal, openModal, showToast } from './core.js?v=20261117b';
+import { SECRETS } from './accounts.js?v=20261117b';
+import { ORPHAN_COLLECTIONS, chunk, countByCol, oldReadNotifications, planOrphans } from './cleanup-plan.js?v=20261117b';
 
 const MODAL_ID = 'cleanupModal';
 let _plan = null; // 검사 결과

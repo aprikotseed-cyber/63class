@@ -16,3 +16,5 @@
 - 선생님 화면에서 학생 계정으로 로그인/생성할 때는 반드시 `getHelperAuth()`(보조 창구)를 써요. 기본 `auth`로 하면 선생님 로그인이 학생으로 바뀌어요.
 - 보안 규칙은 `firestore.rules` (콘솔에 직접 붙여 넣음). 새 컬렉션은 로그인 사용자 전체 허용 규칙에 걸려요. 비밀 데이터는 studentSecrets 처럼 따로 match 를 둬요.
 - 홈페이지 임시 폐쇄: `config/closure` {closed, message} (js/closure.js). 규칙상 선생님만 쓸 수 있어요. 로그인 때 watchClosure(), 로그아웃 때 stopWatchingClosure().
+- 문이 닫히면 firestore.rules 의 canUse() 가 학생의 읽기·쓰기를 거절해요. 학생 로그인/자동 로그인은 먼저 isSiteClosed() 를 보고 닫혀 있으면 showClosedGate() (앱 대신 안내 화면).
+- js/version-check.js 가 version.json 을 보고 켜진 화면을 새로고침해요. 배포할 때 버전을 꼭 올려요.

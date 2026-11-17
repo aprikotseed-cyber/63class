@@ -1,13 +1,14 @@
 // auth.js — 로그인(교사/학생), 자동 로그아웃, 교사 비밀번호 변경
-import { state } from './state.js?v=20261117a';
+import { state } from './state.js?v=20261117b';
 import {
   EmailAuthProvider, auth, browserSessionPersistence, collection, createUserWithEmailAndPassword, db,
   deleteField, doc, getDoc, getDocs, query, reauthenticateWithCredential, serverTimestamp, setDoc,
   setPersistence, signInWithEmailAndPassword, signOut, updateDoc, updatePassword, where
-} from './firebase.js?v=20261117a';
-import { getCfgTeacher, showToast } from './core.js?v=20261117a';
-import { makePw, nameToEmail } from './level.js?v=20261117a';
-import { enterApp } from './enter.js?v=20261117a';
+} from './firebase.js?v=20261117b';
+import { getCfgTeacher, showToast } from './core.js?v=20261117b';
+import { makePw, nameToEmail } from './level.js?v=20261117b';
+import { enterApp } from './enter.js?v=20261117b';
+import { isSiteClosed, showClosedGate } from './closure.js?v=20261117b';
 
 // ===== 로그인 탭 =====
 window.switchLoginTab = function(tab, btn) {
@@ -96,6 +97,9 @@ window.studentLogin = async function() {
     }
     if (!cred) throw lastErr;
     const authUid = cred.user.uid; // Firebase Auth uid
+
+    // 홈페이지 문이 닫혀 있으면 앱에 들어가지 않고 안내 화면만 (닫힌 동안은 서버가 학생 데이터 읽기를 막아요)
+    if (await isSiteClosed()) { showClosedGate(authUid, name); return; }
 
     // Auth uid로 직접 Firestore 문서 조회 (가장 정확)
     let studentDoc = await getDoc(doc(db, 'students', authUid));
