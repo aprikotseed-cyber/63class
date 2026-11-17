@@ -1,14 +1,14 @@
 // books.js — 독서량, 독서 완료 카드
-import { state } from './state.js?v=20261117b';
+import { state } from './state.js?v=20261117c';
 import {
   addDoc, collection, db, doc, getDoc, getDocFromServer, getDocs, increment, query,
   serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261117b';
-import { closeModal, openModal, showToast } from './core.js?v=20261117b';
-import { checkAndGrantRankUp } from './level.js?v=20261117b';
-import { reloadStudents } from './realtime.js?v=20261117b';
-import { renderDashboard } from './dashboard.js?v=20261117b';
-import { praiseCards, reloadPraiseCards } from './cards.js?v=20261117b';
+} from './firebase.js?v=20261117c';
+import { closeModal, openModal, showToast } from './core.js?v=20261117c';
+import { checkAndGrantRankUp } from './level.js?v=20261117c';
+import { reloadStudents } from './realtime.js?v=20261117c';
+import { renderDashboard } from './dashboard.js?v=20261117c';
+import { praiseCards, reloadPraiseCards } from './cards.js?v=20261117c';
 
 // ===== 독서량 (교사/학생 공통) =====
 let _bookChartInstance = null;
@@ -475,7 +475,7 @@ window.confirmBookCardGrant = async function() {
     // 포인트 + 능력치 한 번에 처리
     const updateData = {
       points: increment(delta),
-      ...(delta>0?{accumulatedPoints:increment(delta)}:{})
+      accumulatedPoints: increment(delta) // 벌점카드는 누적포인트도 함께 깎음
     };
     const abUpdate = {};
     if (card.abilities) {
@@ -498,7 +498,7 @@ window.confirmBookCardGrant = async function() {
         await checkAndGrantRankUp(s.id, prevAb, abUpdate, fd.abilityRankGranted||{});
       }
     }
-    await addDoc(collection(db,'givenCards'),{studentId:s.id,studentName:s.name,cardId:card.id,cardTitle:card.title,cardEmoji:card.emoji||'',type:card.type,cardType:card.type,cost:card.point||0,delta:card.type==='praise'?(card.point||0):-(card.point||0),source:'bookGrant',createdAt:serverTimestamp(),givenAt:serverTimestamp()});
+    await addDoc(collection(db,'givenCards'),{studentId:s.id,studentName:s.name,cardId:card.id,cardTitle:card.title,cardEmoji:card.emoji||'',type:card.type,cardType:card.type,cost:card.point||0,delta:card.type==='praise'?(card.point||0):-(card.point||0),accumDelta:delta,source:'bookGrant',createdAt:serverTimestamp(),givenAt:serverTimestamp()});
     await addDoc(collection(db,'history'),{studentId:s.id,studentName:s.name,delta,reason:`독서 완료 카드 부여: ${card.emoji||''} ${card.title}`,type:card.type==='praise'?'plus':'minus',source:'bookGrant',createdAt:serverTimestamp()});
     await addDoc(collection(db,'bookCardLog'),{weekKey,studentId:s.id,cardId:card.id,grantedAt:serverTimestamp()});
   }

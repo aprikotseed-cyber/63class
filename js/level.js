@@ -1,8 +1,8 @@
 // level.js — 레벨·랭크 계산, 랭크업 체크
 import {
   addDoc, collection, db, doc, increment, serverTimestamp, updateDoc
-} from './firebase.js?v=20261117b';
-import { RANK_NAMES, getRankIdx } from './core.js?v=20261117b';
+} from './firebase.js?v=20261117c';
+import { RANK_NAMES, getRankIdx } from './core.js?v=20261117c';
 
 // ===== 레벨 시스템 =====
 export function calcLevel(accum) {

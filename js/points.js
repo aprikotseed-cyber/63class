@@ -1,11 +1,11 @@
 // points.js — 학생: 내 포인트
-import { state } from './state.js?v=20261117b';
-import { collection, db, getDocs, limit, orderBy, query, where } from './firebase.js?v=20261117b';
-import { calcLevel, formatTime, getAbilityRank } from './level.js?v=20261117b';
-import { reloadStudents } from './realtime.js?v=20261117b';
-import { FRAME_DATA } from './frames.js?v=20261117b';
-import { getTitleBadgeHtml } from './titles.js?v=20261117b';
-import { buildCharHtml } from './avatar.js?v=20261117b';
+import { state } from './state.js?v=20261117c';
+import { collection, db, getDocs, limit, orderBy, query, where } from './firebase.js?v=20261117c';
+import { calcLevel, formatTime, getAbilityRank } from './level.js?v=20261117c';
+import { reloadStudents } from './realtime.js?v=20261117c';
+import { FRAME_DATA } from './frames.js?v=20261117c';
+import { getTitleBadgeHtml } from './titles.js?v=20261117c';
+import { buildCharHtml } from './avatar.js?v=20261117c';
 
 // ===== 학생: 내 포인트 =====
 export async function renderMyPoints() {
