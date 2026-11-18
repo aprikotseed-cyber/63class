@@ -1,13 +1,13 @@
 // dungeon-admin.js — 던전 관리 (교사: 설정·이미지 라이브러리·보스)
-import { state } from './state.js?v=20261117c';
+import { state } from './state.js?v=20261118a';
 import {
   collection, db, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261117c';
-import { closeModal, showToast } from './core.js?v=20261117c';
-import { getTodayStr } from './attendance.js?v=20261117c';
+} from './firebase.js?v=20261118a';
+import { closeModal, showToast } from './core.js?v=20261118a';
+import { getTodayStr } from './attendance.js?v=20261118a';
 import {
   loadQuizDungeonBoss, loadQuizDungeonConfig, loadQuizDungeonManageStatus
-} from './quiz-dungeon.js?v=20261117c';
+} from './quiz-dungeon.js?v=20261118a';
 
 // ===================================================
 // ⚔️ 던전 시스템
@@ -416,7 +416,8 @@ window.removeQuizParticipant = async function(uid) {
   if (!boss) return;
   const participants = (boss.participants || []).filter(id => id !== uid);
   const clearers = (boss.clearers || []).filter(id => id !== uid);
-  await updateDoc(doc(db, 'config', 'quizDungeonBoss'), { participants, clearers });
+  const inProgress = (boss.inProgress || []).filter(id => id !== uid);
+  await updateDoc(doc(db, 'config', 'quizDungeonBoss'), { participants, clearers, inProgress });
   state.quizDungeonBoss = undefined;
   showToast('제거됐어요');
   openQuizParticipantsModal();

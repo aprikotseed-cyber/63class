@@ -124,6 +124,7 @@ js/profile.js       학생 설정·비밀번호·프로필 메시지
 js/dungeon.js       챌린지 던전 (학생: 로비·전투·단체 던전)
 js/dungeon-admin.js 던전 관리 (교사: 설정·이미지 라이브러리·보스)
 js/quiz-dungeon.js  문제 던전
+js/dungeon-run.js   던전 "오늘의 도전 기회"를 서버에서 관리 (편법 방지)
 
 firestore.rules           Firestore 보안 규칙 (콘솔에 붙여 넣기)
 scripts/bump-version.mjs  파일 버전(?v=) 한꺼번에 올리기

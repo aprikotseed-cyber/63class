@@ -4,9 +4,9 @@
 // · 로그인한 사람은 이 문서 하나만 실시간으로 지켜봐요 (읽기 1건 + 바뀔 때마다 1건)
 // · 닫혀 있으면 학생 화면 전체를 뿌옇게 가리고 아무것도 누를 수 없게 해요.
 //   선생님(학생 뷰로 보고 있을 때 포함)은 가리지 않고, 맨 위에 "학생 화면 닫힘" 표시만 보여요.
-import { state } from './state.js?v=20261117c';
-import { auth, db, doc, getDoc, onSnapshot, serverTimestamp, setDoc } from './firebase.js?v=20261117c';
-import { showToast } from './core.js?v=20261117c';
+import { state } from './state.js?v=20261118a';
+import { auth, db, doc, getDoc, onSnapshot, serverTimestamp, setDoc } from './firebase.js?v=20261118a';
+import { showToast } from './core.js?v=20261118a';
 
 export const DEFAULT_CLOSED_MESSAGE = '즐거운 학교 생활을 위해 운영하는 홈페이지가 오히려 학습 태도를 망치는 부작용을 발생시키고 있어 임시폐쇄합니다.';
 const closureRef = () => doc(db, 'config', 'closure');

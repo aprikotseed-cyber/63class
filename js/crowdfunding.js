@@ -1,11 +1,11 @@
 // crowdfunding.js — 크라우드펀딩
-import { state } from './state.js?v=20261117c';
+import { state } from './state.js?v=20261118a';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, orderBy,
   query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261117c';
-import { closeModal, openModal, showToast } from './core.js?v=20261117c';
-import { reloadStudents } from './realtime.js?v=20261117c';
+} from './firebase.js?v=20261118a';
+import { closeModal, openModal, showToast } from './core.js?v=20261118a';
+import { reloadStudents } from './realtime.js?v=20261118a';
 
 // ===== 💰 크라우드펀딩 =====
 let _cfEditingId = null;

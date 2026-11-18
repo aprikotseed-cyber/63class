@@ -1,15 +1,16 @@
 // dungeon.js — 챌린지 던전 (학생: 로비·전투·단체 던전)
-import { state } from './state.js?v=20261117c';
+import { state } from './state.js?v=20261118a';
 import {
-  addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment,
-  serverTimestamp, updateDoc
-} from './firebase.js?v=20261117c';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261117c';
-import { getTodayStr } from './attendance.js?v=20261117c';
-import { loadRoles, roles } from './roles.js?v=20261117c';
-import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261117c';
-import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261117c';
-import { buildCharHtml, getStudentChar } from './avatar.js?v=20261117c';
+  addDoc, arrayUnion, collection, db, deleteDoc, doc, getDoc, getDocs, increment,
+  runTransaction, serverTimestamp, updateDoc
+} from './firebase.js?v=20261118a';
+import { claimRun, markRunUsed, releaseRun, releaseStaleRuns, rewardRun } from './dungeon-run.js?v=20261118a';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261118a';
+import { getTodayStr } from './attendance.js?v=20261118a';
+import { loadRoles, roles } from './roles.js?v=20261118a';
+import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261118a';
+import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261118a';
+import { buildCharHtml, getStudentChar } from './avatar.js?v=20261118a';
 
 // ===== ⚔️ 챌린지 던전 =====
 window.startDungeonChallenge = async function() {
@@ -54,7 +55,14 @@ export async function updateMyRolesBadge() {
 }
 
 window.renderDungeonLobby = async function() {
-  if (state.battleState) state.battleState._processing = false; // 락 해제
+  // 진행 중이던 전투를 떠남: 그 전투는 끝난 것으로 (연타 잠금은 풀지 않아요 — 풀면 죽기 직전에 한 번 더 공격하는 편법이 생겨요)
+  const leaving = state.battleState;
+  if (leaving && !leaving.done) {
+    leaving.done = true;
+    leaving.abandoned = true;
+    if (!leaving.attacked && leaving.runId) { try { await releaseRun(leaving.kind, leaving.runId); } catch (e) {} }
+  }
+  state.battleState = null;
   const lobby = document.getElementById('dungeonLobby');
   const battle = document.getElementById('dungeonBattle');
   if (!lobby || !battle) return;
@@ -79,6 +87,8 @@ window.renderDungeonLobby = async function() {
       if (idx >= 0) state.students[idx] = freshData;
       else state.students.push(freshData);
     }
+    // 공격 전에 새로고침하거나 창을 닫아서 남은 "선점만 한" 기회는 돌려줘요
+    await releaseStaleRuns();
   }
   lobby.style.display = 'block';
   lobby.style.opacity = '0';
@@ -404,6 +414,20 @@ let sDoc2char = 'https://i.ibb.co/TMcWFtGr/image.png'; // 전역 캐릭터 URL
 let sDocCharIsImg = true;
 
 window.enterBattle = async function(difficulty) {
+  if (window._enteringBattle) return; // 난이도 카드 연타 방지
+  window._enteringBattle = true;
+  try { await _enterBattle(difficulty); } finally { window._enteringBattle = false; }
+};
+async function _enterBattle(difficulty) {
+  // 오늘 기회를 서버에서 먼저 사용 처리 (새로고침·다시 들어오기·창 여러 개 편법 방지)
+  const kind = difficulty === 'challenge' ? 'challenge' : 'solo';
+  let runId = null;
+  try { runId = await claimRun(kind); } catch (e) { return showToast('오류: ' + e.message); }
+  if (!runId) {
+    showToast(kind === 'challenge' ? '오늘은 이미 챌린지 던전에 참여했어요!' : '오늘은 이미 개인 던전에 참여했어요!');
+    return renderDungeonLobby();
+  }
+  updateDungeonBadge();
   const sData = state.students.find(s => s.id === state.currentUser.uid) || {};
   sDoc2char = getStudentChar({ id: state.currentUser.uid, character: sData.character, avatarEquipped: sData.avatarEquipped, avatarEquippedMeta: sData.avatarEquippedMeta });
   sDocCharIsImg = true;
@@ -437,7 +461,8 @@ window.enterBattle = async function(difficulty) {
     bgImg: baseM.bg || '',
     attacked: false,
     abilities: ab,
-    _processing: false, // 공격 처리 락 초기화
+    _processing: false, // 공격 처리 락 (적 반격이 끝나야 풀려요)
+    kind, runId,
   };
 
   const scalePct = Math.round(scaleRatio * 100);
@@ -455,15 +480,27 @@ window.enterBattle = async function(difficulty) {
     setTimeout(() => { battleEl.style.opacity = '1'; }, 10);
     renderBattle();
   }, 150);
-};
+}
 
 // ===== 플레이어 행동 =====
 window.doPlayerAction = async function(action) {
   const b = state.battleState;
-  if (b.done) return;
-  // JS 레벨 락 — async 처리 중 연타 완전 차단
+  if (!b || b.done || b.mode === 'raid') return;
+  // 연타 잠금 — 적 반격이 끝날 때까지 다음 행동 불가
   if (b._processing) return;
   b._processing = true;
+  if (!b.attacked) {
+    // 첫 행동: 이 도전을 "사용함"으로 (이제 나가도 기회가 돌아오지 않아요)
+    let ok = false;
+    try { ok = await markRunUsed(b.kind, b.runId); } catch (e) { b._processing = false; return showToast('인터넷 연결을 확인해 주세요'); }
+    if (!ok) {
+      b.done = true;
+      b.logs.push({cls:'system', txt:'⚠️ 다른 화면에서 던전을 다시 열어서 이 전투는 끝났어요.'});
+      renderBattle();
+      return;
+    }
+    if (state.battleState !== b || b.done) return;
+  }
   b.attacked = true; // 1턴 진행 기록
   const s = b.heroStats;
   const m = b.monster;
@@ -532,6 +569,7 @@ window.doPlayerAction = async function(action) {
   // 방어/회복/빗나감 → 즉시 반격으로 넘김 (적 사망 체크 불필요)
   if (action === 'defend' || action === 'heal' || missed) {
     setTimeout(() => {
+      if (state.battleState !== b || b.abandoned) return; // 이미 떠난 전투
       const eDmg = Math.max(1, Math.round(m.atk * (1 - s.def/(s.def+30)) * (b.defending?0.5:1) * (0.85+Math.random()*0.3)));
       b.heroHp = Math.max(0, b.heroHp - eDmg);
       b.logs.push({cls:'dmg', txt:`👹 ${m.name}의 반격! <strong>${eDmg}</strong> 피해!`});
@@ -539,9 +577,8 @@ window.doPlayerAction = async function(action) {
       b.turn++;
       if (b.heroHp <= 0) {
         b.logs.push({cls:'system', txt:'💀 쓰러졌습니다... 내일 다시 도전하세요!'});
-        b.done = true;
-        const today2 = getTodayStr();
-        updateDoc(doc(db, 'students', state.currentUser.uid), { [state.battleState.difficulty==='challenge'?'dungeonChallengeDate':'dungeonSoloDate']: today2 }); if(state.battleState.difficulty!=='challenge') updateDungeonBadge();
+        b.done = true; // 오늘 기회는 시작할 때 이미 사용 처리됐어요
+        updateDungeonBadge();
       } else {
         b.logs.push({cls:'system', txt:`⚡ Turn ${b.turn} — 내 차례`});
         b._processing = false; // 락 해제 먼저 → renderBattle에서 버튼 활성화
@@ -559,51 +596,44 @@ window.doPlayerAction = async function(action) {
     b.logs.push({cls:'system', txt:`🎉 ${m.name}을(를) 처치했습니다! +${reward}🪙 획득!${abMsg?` (${abMsg})`:''}`});
     b.done = true;
     renderBattle();
-    // 보상 지급
-    const today = getTodayStr();
-
-    // 랭크업 체크 (능력치 보상이 있을 때)
-    let rankBonus = 0;
-    const rankGrantedUpdate2 = {};
-    const rankUpNames2 = [];
-    if (Object.keys(abReward).length > 0) {
-      const freshDoc2 = await getDocFromServer(doc(db, 'students', state.currentUser.uid));
-      const freshData2 = freshDoc2.exists() ? freshDoc2.data() : {};
-      const prevAbilities2 = freshData2.abilities || {};
-      const rankGranted2 = freshData2.abilityRankGranted || {};
-      for (const [k, v] of Object.entries(abReward)) {
-        const prev = prevAbilities2[k] || 0;
-        const next = prev + v;
-        const prevRankIdx = getRankIdx(prev);
-        const nextRankIdx = getRankIdx(next);
-        const grantedSoFar = rankGranted2[k] !== undefined ? rankGranted2[k] : 0;
-        const fromRank = Math.max(prevRankIdx, grantedSoFar);
-        if (nextRankIdx > fromRank) {
-          rankBonus += 500 * (nextRankIdx - fromRank);
-          rankGrantedUpdate2[`abilityRankGranted.${k}`] = nextRankIdx;
-          rankUpNames2.push(`${k} ${RANK_NAMES[nextRankIdx]}`);
+    // 보상 지급: 이번 도전이 맞고 아직 보상을 안 받았을 때만 (창 여러 개·연타로 두 번 받는 것 방지)
+    let got = null;
+    try {
+      got = await rewardRun(b.kind, b.runId, (fresh) => {
+        const prevAbilities2 = fresh.abilities || {};
+        const rankGranted2 = fresh.abilityRankGranted || {};
+        let rankBonus = 0;
+        const update = {};
+        const rankUpNames2 = [];
+        for (const [k, v] of Object.entries(abReward)) {
+          const prev = prevAbilities2[k] || 0;
+          const prevRankIdx = getRankIdx(prev);
+          const nextRankIdx = getRankIdx(prev + v);
+          const grantedSoFar = rankGranted2[k] !== undefined ? rankGranted2[k] : 0;
+          const fromRank = Math.max(prevRankIdx, grantedSoFar);
+          if (nextRankIdx > fromRank) {
+            rankBonus += 500 * (nextRankIdx - fromRank);
+            update[`abilityRankGranted.${k}`] = nextRankIdx;
+            rankUpNames2.push(`${k} ${RANK_NAMES[nextRankIdx]}`);
+          }
+          update[`abilities.${k}`] = increment(v);
         }
-      }
-    }
-
-    const updateData = {
-      points: increment(reward),
-      accumulatedPoints: increment(reward),
-      [state.battleState.difficulty==='challenge'?'dungeonChallengeDate':'dungeonSoloDate']: today,
-    };
-    // 능력치 보상
-    Object.entries(abReward).forEach(([ab, v]) => {
-      updateData[`abilities.${ab}`] = increment(v);
-    });
-    await updateDoc(doc(db, 'students', state.currentUser.uid), updateData);
-
-    // 랭크업 보상 별도 지급
-    if (rankBonus > 0) {
-      await updateDoc(doc(db, 'students', state.currentUser.uid), {
-        points: increment(rankBonus),
-        accumulatedPoints: increment(rankBonus),
-        ...rankGrantedUpdate2
+        update.points = increment(reward + rankBonus);
+        update.accumulatedPoints = increment(reward + rankBonus);
+        return { update, info: { rankBonus, rankUpNames2 } };
       });
+    } catch (e) {
+      b.logs.push({cls:'system', txt:`⚠️ 보상 저장 중 오류가 났어요: ${e.message}`});
+      renderBattle();
+      return;
+    }
+    if (!got) {
+      b.logs.push({cls:'system', txt:'⚠️ 이 도전의 보상은 이미 받았거나, 다른 화면에서 새로 도전해서 보상이 없어요.'});
+      renderBattle();
+      return;
+    }
+    const { rankBonus, rankUpNames2 } = got;
+    if (rankBonus > 0) {
       b.logs.push({cls:'system', txt:`🏆 랭크업! ${rankUpNames2.join(', ')} — 보상 +${rankBonus}🪙`});
       renderBattle();
       await addDoc(collection(db, 'notifications'), {
@@ -620,12 +650,12 @@ window.doPlayerAction = async function(action) {
       abilities: abReward,
       type: 'plus', source: 'dungeon', createdAt: serverTimestamp()
     });
-    b._processing = false; // 클리어 시 락 해제
     return;
   }
 
   // 적 반격
   setTimeout(() => {
+    if (state.battleState !== b || b.abandoned) return; // 이미 떠난 전투
     const isExposed = action === 'crit' && Math.random() < 0.4;
     const eDmg = Math.max(1, Math.round(m.atk * (1 - s.def/(s.def+30)) * (b.defending?0.5:1) * (0.85+Math.random()*0.3) * (isExposed ? 1.3 : 1)));
     b.heroHp = Math.max(0, b.heroHp - eDmg);
@@ -637,9 +667,8 @@ window.doPlayerAction = async function(action) {
     b.turn++;
     if (b.heroHp <= 0) {
       b.logs.push({cls:'system', txt:'💀 쓰러졌습니다... 내일 다시 도전하세요!'});
-      b.done = true;
-      const today = getTodayStr();
-      updateDoc(doc(db, 'students', state.currentUser.uid), { [state.battleState.difficulty==='challenge'?'dungeonChallengeDate':'dungeonSoloDate']: today });
+      b.done = true; // 오늘 기회는 시작할 때 이미 사용 처리됐어요
+      updateDungeonBadge();
     } else {
       b.logs.push({cls:'system', txt:`⚡ Turn ${b.turn} — 내 차례`});
       b._processing = false; // 락 해제 먼저 → renderBattle에서 버튼 활성화
@@ -666,6 +695,14 @@ window.startDungeonRaid = async function() {
   const bossM = { ...DEFAULT_MONSTERS.boss, ...(state.dungeonConfig?.boss||{}) };
   const stats = calcBattleStats(sData.abilities);
 
+  // 오늘 기회를 서버에서 먼저 선점 (창 여러 개로 공격 기회를 늘리는 편법 방지). 공격 전에 나가면 돌려줘요.
+  if (window._enteringRaid) return;
+  window._enteringRaid = true;
+  let runId = null;
+  try { runId = await claimRun('raid'); } catch (e) { window._enteringRaid = false; return showToast('오류: ' + e.message); }
+  window._enteringRaid = false;
+  if (!runId) return showToast('오늘은 이미 단체 던전에 참여했어요!');
+
   // 단체 던전 전투 (1회 공격)
   sDoc2char = getStudentChar({ id: state.currentUser.uid, character: sData.character, avatarEquipped: sData.avatarEquipped });
   sDocCharIsImg = true;
@@ -677,6 +714,7 @@ window.startDungeonRaid = async function() {
     heroStats: stats, monster: bossM, logs:[], done:false,
     raidData: bossData,
     attacked: false,
+    kind: 'raid', runId,
   };
   state.battleState.logs.push({cls:'boss', txt:'🐉 단체 던전! 보스에게 공격하세요!'});
   state.battleState.logs.push({cls:'system', txt:'⚡ 사망하거나 보스를 쓰러뜨릴 때까지 공격할 수 있어요!'});
@@ -752,7 +790,7 @@ function renderRaidBattle() {
 
 window.doRaidAction = async function(action) {
   const b = state.battleState;
-  if (b.done) return;
+  if (!b || b.done || b.mode !== 'raid') return;
   b.done = true; // 즉시 잠금 (비동기 처리 중 중복 클릭 방지)
   b.attacked = true;
   document.querySelectorAll('.battle-action').forEach(el => el.classList.add('disabled'));
@@ -805,50 +843,68 @@ window.doRaidAction = async function(action) {
       b.logs.push({cls:'dmg', txt:`💥 ${m.name}의 강타! 체력이 <strong>50%</strong> 감소했습니다! (-${halfDmg})`});
     }
 
-    // Firestore 보스 HP 차감 & 참여 기록
-    const today = getTodayStr();
+    // 보스 HP 차감 & 참여 기록 — 트랜잭션: 서버의 최신 HP에서 빼요
+    // (예전엔 각자 처음 본 HP에서 빼서 덮어써서, 동시에 공격하면 체력이 되돌아가고 참여자 명단이 지워졌어요)
+    if (state.battleState !== b || b.abandoned) return;
     const bossRef = doc(db, 'config', 'dungeonBoss');
-    const newHp = Math.max(0, b.enemyHp - dmg);
-    const prevAttackers = b.raidData.attackers || [];
-    const attackers = prevAttackers.includes(state.currentUser.uid)
-      ? prevAttackers
-      : [...prevAttackers, state.currentUser.uid];
-    await updateDoc(bossRef, { currentHp: newHp, attackers });
-    // 참여 기록 항상 저장 (생존/사망/보스처치 무관)
-    await updateDoc(doc(db, 'students', state.currentUser.uid), { dungeonRaidDate: today }); updateDungeonBadge();
+    const meRef = doc(db, 'students', state.currentUser.uid);
+    let res;
+    try {
+      res = await runTransaction(db, async (tx) => {
+        const bs = await tx.get(bossRef);
+        const ms = await tx.get(meRef);
+        const run = ms.data()?.dungeonRaidRun;
+        if (!run || run.id !== b.runId) return { stale: true };
+        const bd = bs.exists() ? bs.data() : null;
+        if (!bd || bd.cleared || (bd.currentHp || 0) <= 0) return { over: true, hp: bd?.currentHp || 0 };
+        const newHp = Math.max(0, (bd.currentHp || 0) - dmg);
+        const upd = { currentHp: newHp, attackers: arrayUnion(state.currentUser.uid) };
+        const iCleared = newHp <= 0;
+        if (iCleared) Object.assign(upd, { cleared: true, clearedAt: serverTimestamp(), clearedBy: state.currentUser.uid });
+        tx.update(bossRef, upd);
+        if (!run.used) tx.update(meRef, { 'dungeonRaidRun.used': true });
+        const attackers = [...new Set([...(bd.attackers || []), state.currentUser.uid])];
+        return { hp: newHp, iCleared, attackers };
+      });
+    } catch (e) {
+      b.done = true;
+      b.logs.push({cls:'system', txt:`⚠️ 공격이 저장되지 않았어요: ${e.message}`});
+      renderRaidBattle();
+      return;
+    }
+    if (res.stale) {
+      b.done = true;
+      b.logs.push({cls:'system', txt:'⚠️ 다른 화면에서 단체 던전을 다시 열어서 이 전투는 끝났어요.'});
+      renderRaidBattle();
+      return;
+    }
+    if (res.over) {
+      b.done = true;
+      b.enemyHp = 0;
+      b.logs.push({cls:'boss', txt:'🎉 보스가 이미 처치됐어요! 이번 공격은 반영되지 않았어요.'});
+      renderRaidBattle();
+      return;
+    }
+    updateDungeonBadge();
+    const newHp = res.hp;
+    const attackers = res.attackers;
+    b.raidData = { ...b.raidData, attackers };
     b.enemyHp = newHp;
 
-    if (newHp <= 0) {
-      // 트랜잭션으로 중복 클리어 완전 차단
-      const { runTransaction } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      let alreadyCleared = false;
-      try {
-        await runTransaction(db, async (transaction) => {
-          const freshBoss = await transaction.get(bossRef);
-          if (freshBoss.data()?.cleared) { alreadyCleared = true; return; }
-          transaction.update(bossRef, { cleared: true, clearedAt: serverTimestamp() });
-        });
-      } catch(e) { alreadyCleared = true; }
-
-      if (alreadyCleared) {
-        b.logs.push({cls:'boss', txt:`🎉 보스가 이미 처치됐어요! 보상은 곧 지급돼요.`});
-        b.done = true;
-        renderRaidBattle();
-        return;
-      }
-
+    if (res.iCleared) {
+      // 마지막 일격을 넣은 학생만 여기로 와요 (트랜잭션에서 한 명만 cleared 를 기록)
       const bossReward = state.dungeonConfig?.boss?.reward || 500;
       b.done = true;
       b.logs.push({cls:'boss', txt:`🎉 보스를 처치했습니다! 전원 +${bossReward}🪙 보상 지급!`});
       const sSnap = await getDocs(collection(db, 'students'));
       const todayStr = getTodayStr();
-      const participantIds = new Set(attackers);
+      const participantIds = new Set(attackers); // 이 보스를 한 번이라도 공격한 학생
       // Promise.all 대신 순차 처리 - 한 명 실패해도 나머지 계속
       for (const sd of sSnap.docs) {
         try {
           const sdata = sd.data();
           if (sdata.hidden) continue; // 숨긴 학생 제외
-          const participated = participantIds.has(sd.id) || sdata.dungeonRaidDate === todayStr;
+          const participated = participantIds.has(sd.id);
           if (!participated) continue;
           await updateDoc(doc(db, 'students', sd.id), {
             points: increment(bossReward),
@@ -882,18 +938,18 @@ window.doRaidAction = async function(action) {
 };
 
 // ===== 던전 도망 처리 =====
-window.tryEscape = function() {
+window.tryEscape = async function() {
   const b = state.battleState;
-  if (!b) return;
-  if (b) b._processing = false; // 락 해제
+  if (!b) return renderDungeonLobby();
+  if (b.done) return renderDungeonLobby();
+  if (b._processing) return showToast('공격이 끝난 뒤에 나갈 수 있어요'); // 반격 대기 중엔 나가기 막기
   if (!b.attacked) {
-    // 챌린지 던전은 난이도 선택 없이 바로 로비로
-    if (b.difficulty === 'challenge') {
-      renderDungeonLobby();
-    } else {
-      // 한 번도 공격 안 함 → 즉시 난이도 선택으로
-      showDifficultySelect();
-    }
+    // 한 번도 공격 안 함 → 기회를 돌려주고 나가기
+    b.done = true; b.abandoned = true;
+    try { await releaseRun(b.kind, b.runId); } catch (e) {}
+    state.battleState = null;
+    if (b.difficulty === 'challenge') renderDungeonLobby();
+    else showDifficultySelect();
   } else {
     // 공격한 적 있음 → 확인창
     openModal('dungeonEscapeModal');
@@ -902,23 +958,21 @@ window.tryEscape = function() {
 
 window.confirmEscape = async function() {
   closeModal('dungeonEscapeModal');
-  if (state.battleState) state.battleState._processing = false; // 락 해제
-  // 도전 기회 소모 처리
-  const today = getTodayStr();
-  await updateDoc(doc(db, 'students', state.currentUser.uid), { [state.battleState.difficulty==='challenge'?'dungeonChallengeDate':'dungeonSoloDate']: today });
+  const b = state.battleState;
+  if (b) { b.done = true; b.abandoned = true; }
+  // 오늘 기회는 시작할 때(단체 던전은 첫 공격 때) 이미 사용 처리됐어요
   updateDungeonBadge();
   showToast('도망쳤어요... 오늘의 도전 기회가 사라졌어요 🏃');
-  // 로비로 이동 후 오늘 참여 표시
   await renderDungeonLobby();
 };
 
 // 단체 던전 도망
-window.tryRaidEscape = function() {
+window.tryRaidEscape = async function() {
   const b = state.battleState;
   if (!b || b.done) { renderDungeonLobby(); return; }
-  // 단체 던전은 공격 전이면 바로 로비로
+  // 단체 던전은 공격 전이면 기회를 돌려주고 바로 로비로
   if (!b.attacked) {
-    renderDungeonLobby();
+    renderDungeonLobby(); // 로비가 공격 안 한 기회를 돌려줘요
   } else {
     openModal('dungeonEscapeModal');
   }
