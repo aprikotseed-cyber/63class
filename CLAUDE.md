@@ -18,3 +18,5 @@
 - 홈페이지 임시 폐쇄: `config/closure` {closed, message} (js/closure.js). 규칙상 선생님만 쓸 수 있어요. 로그인 때 watchClosure(), 로그아웃 때 stopWatchingClosure().
 - 문이 닫히면 firestore.rules 의 canUse() 가 학생의 읽기·쓰기를 거절해요. 학생 로그인/자동 로그인은 먼저 isSiteClosed() 를 보고 닫혀 있으면 showClosedGate() (앱 대신 안내 화면).
 - js/version-check.js 가 version.json 을 보고 켜진 화면을 새로고침해요. 배포할 때 버전을 꼭 올려요.
+- 던전 편법 방지 (js/dungeon-run.js): 개인·챌린지·단체 던전은 전투 시작 때 claimRun() 으로 오늘 기회를 서버에 먼저 기록, 첫 공격 때 markRunUsed(), 공격 전 이탈은 releaseRun()/releaseStaleRuns(), 보상은 rewardRun() 트랜잭션으로 한 번만. 단체 던전 보스 HP 는 트랜잭션으로 차감(arrayUnion 참여자). 문제 던전은 시작 때 participants+inProgress 에 기록, 끝날 때 inProgress 에 있는 사람만 보상.
+- 전투 중엔 학생 문서 실시간 갱신이 던전 로비를 다시 그리지 않게 해요 (realtime.js) — 다시 그리면 진행 중 전투가 무효 처리돼요.

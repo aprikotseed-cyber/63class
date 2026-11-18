@@ -1,24 +1,25 @@
 // nav.js — 페이지 이동(네비게이션)
-import { state } from './state.js?v=20261117c';
-import { db, deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from './firebase.js?v=20261117c';
-import { getCfgTeacher } from './core.js?v=20261117c';
-import { renderShopPage } from './shop.js?v=20261117c';
-import { renderDashboard } from './dashboard.js?v=20261117c';
-import { renderStudentList } from './students.js?v=20261117c';
-import { renderCardsPage } from './cards.js?v=20261117c';
-import { renderExchanges } from './exchanges.js?v=20261117c';
-import { renderMessages } from './messages.js?v=20261117c';
-import { renderStudentHome, renderTeacherHome } from './home.js?v=20261117c';
-import { renderMyRolesPage, renderRoleManagePage } from './roles.js?v=20261117c';
-import { renderBoardPage } from './board.js?v=20261117c';
-import { renderDecorShop, renderMyInventory } from './inventory.js?v=20261117c';
-import { renderDungeonManage } from './dungeon-admin.js?v=20261117c';
-import { renderQuizDungeonSection } from './quiz-dungeon.js?v=20261117c';
-import { renderBooksPage } from './books.js?v=20261117c';
-import { renderDecorManage, renderTitlesPage } from './titles.js?v=20261117c';
-import { renderStudentSettings } from './profile.js?v=20261117c';
-import { renderMyPoints } from './points.js?v=20261117c';
-import { renderClosureSettings } from './closure.js?v=20261117c';
+import { state } from './state.js?v=20261118a';
+import { db, deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from './firebase.js?v=20261118a';
+import { getCfgTeacher } from './core.js?v=20261118a';
+import { renderShopPage } from './shop.js?v=20261118a';
+import { renderDashboard } from './dashboard.js?v=20261118a';
+import { renderStudentList } from './students.js?v=20261118a';
+import { renderCardsPage } from './cards.js?v=20261118a';
+import { renderExchanges } from './exchanges.js?v=20261118a';
+import { renderMessages } from './messages.js?v=20261118a';
+import { renderStudentHome, renderTeacherHome } from './home.js?v=20261118a';
+import { renderMyRolesPage, renderRoleManagePage } from './roles.js?v=20261118a';
+import { renderBoardPage } from './board.js?v=20261118a';
+import { renderDecorShop, renderMyInventory } from './inventory.js?v=20261118a';
+import { renderDungeonManage } from './dungeon-admin.js?v=20261118a';
+import { renderQuizDungeonSection } from './quiz-dungeon.js?v=20261118a';
+import { renderBooksPage } from './books.js?v=20261118a';
+import { renderDecorManage, renderTitlesPage } from './titles.js?v=20261118a';
+import { renderStudentSettings } from './profile.js?v=20261118a';
+import { renderMyPoints } from './points.js?v=20261118a';
+import { renderClosureSettings } from './closure.js?v=20261118a';
+import { leaveQuizRun } from './quiz-dungeon.js?v=20261118a';
 
 // ===== 네비게이션 (사이트 설정 연동) =====
 window.navigate = async function(page) {
@@ -33,22 +34,10 @@ window.navigate = async function(page) {
     }
   }
 
-  // 문제 던전 진행 중 다른 메뉴로 이탈 시 자동 참여 기록
-  if (page !== 'dungeonSolo' && state.quizBattleState && !state.quizBattleState.done && state.quizBattleState._answered) {
-    try {
-      const { getDocFromServer: gds } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const freshBoss = await gds(doc(db, 'config', 'quizDungeonBoss'));
-      if (freshBoss.exists() && freshBoss.data()?.active) {
-        const bossNow = freshBoss.data();
-        if (!(bossNow.participants||[]).includes(state.currentUser.uid)) {
-          await updateDoc(doc(db, 'config', 'quizDungeonBoss'), {
-            participants: [...(bossNow.participants||[]), state.currentUser.uid]
-          });
-          state.quizDungeonBoss = undefined;
-        }
-      }
-    } catch(e) {}
-    try { await deleteDoc(doc(db, 'config', `quizProgress_${state.currentUser.uid}`)); } catch(e2) {}
+  // 문제 던전 진행 중 다른 메뉴로 이탈: 참여는 시작할 때 이미 기록됨 → 진행 중 표시만 지움 (보상 없음)
+  if (page !== 'dungeonSolo' && state.quizBattleState && !state.quizBattleState.done) {
+    state.quizBattleState.done = true;
+    await leaveQuizRun();
     state.quizBattleState = null;
   }
 

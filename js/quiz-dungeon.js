@@ -1,10 +1,11 @@
 // quiz-dungeon.js — 문제 던전
-import { state } from './state.js?v=20261117c';
+import { state } from './state.js?v=20261118a';
 import {
-  addDoc, collection, db, deleteDoc, doc, getDoc, increment, serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261117c';
-import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261117c';
-import { pushNotif } from './realtime.js?v=20261117c';
+  addDoc, arrayRemove, arrayUnion, collection, db, deleteDoc, doc, getDoc, increment, runTransaction,
+  serverTimestamp, setDoc, updateDoc
+} from './firebase.js?v=20261118a';
+import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261118a';
+import { pushNotif } from './realtime.js?v=20261118a';
 
 // ===================================================
 // 📚 문제 던전 시스템
@@ -445,20 +446,9 @@ window.fleeQuizDungeon = async function() {
   });
   if (!confirmed) return;
 
-  // 서버에서 직접 확인 후 참여 기록 저장
-  try {
-    const { getDocFromServer: gds } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const freshBoss = await gds(doc(db, 'config', 'quizDungeonBoss'));
-    if (freshBoss.exists()) {
-      const bossNow = freshBoss.data();
-      if (!(bossNow.participants||[]).includes(state.currentUser.uid)) {
-        await updateDoc(doc(db, 'config', 'quizDungeonBoss'), {
-          participants: [...(bossNow.participants||[]), state.currentUser.uid]
-        });
-        state.quizDungeonBoss = undefined;
-      }
-    }
-  } catch(e) {}
+  // 참여는 시작할 때 이미 기록됐어요. 진행 중 표시만 지워요 (보상 없음)
+  if (state.quizBattleState) state.quizBattleState.done = true;
+  await leaveQuizRun();
 
   // 전투 화면 종료 + 로비 복귀
   document.getElementById('quizDungeonBattle').style.display = 'none';
@@ -473,14 +463,25 @@ window.startQuizDungeonFromSection = async function() {
   const cfg = await loadQuizDungeonConfig();
   if (!cfg?.questions?.length) return showToast('문제가 없어요');
 
-  // 서버에서 직접 최신 boss 상태 확인 (캐시 무시 - 다중탭 방지 핵심)
-  const { getDocFromServer, runTransaction } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const freshBoss = await getDocFromServer(doc(db, 'config', 'quizDungeonBoss'));
-  if (!freshBoss.exists() || !freshBoss.data()?.active) return showToast('문제 던전이 활성화되지 않았어요');
-  const bossData = freshBoss.data();
-  state.quizDungeonBoss = bossData; // 캐시 최신화
-
-  if ((bossData.participants||[]).includes(state.currentUser.uid)) return showToast('이미 참여한 문제 던전이에요');
+  // 시작하는 순간 참여를 서버에 먼저 기록 (틀리고 새로고침해서 답을 아는 채로 다시 도전하는 편법 방지)
+  if (window._enteringQuiz) return;
+  window._enteringQuiz = true;
+  const bossRef = doc(db, 'config', 'quizDungeonBoss');
+  let claim;
+  try {
+    claim = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(bossRef);
+      if (!snap.exists() || !snap.data()?.active) return 'inactive';
+      const bd = snap.data();
+      if ((bd.participants || []).includes(state.currentUser.uid)) return 'already';
+      tx.update(bossRef, { participants: arrayUnion(state.currentUser.uid), inProgress: arrayUnion(state.currentUser.uid) });
+      return 'ok';
+    });
+  } catch (e) { window._enteringQuiz = false; return showToast('오류: ' + e.message); }
+  window._enteringQuiz = false;
+  state.quizDungeonBoss = undefined;
+  if (claim === 'inactive') return showToast('문제 던전이 활성화되지 않았어요');
+  if (claim === 'already') return showToast('이미 참여한 문제 던전이에요');
 
   state.quizBattleState = {
     questions: cfg.questions,
@@ -561,12 +562,16 @@ function renderQuizBattle() {
     </div>`;
 
   b._started = true;
+  b._busy = false; // 새 문제가 그려진 뒤에야 다시 제출할 수 있어요
   if (q.type === 'short') setTimeout(() => document.getElementById('quizShortInput')?.focus(), 100);
 }
 
 // ── 학생: 답안 제출
 window.submitQuizAnswer = async function(mode) {
   const b = state.quizBattleState;
+  // 연타 잠금: 정답을 두 번 빠르게 누르면 다음 문제까지 정답 처리되던 편법 방지
+  if (!b || b.done || b._busy) return;
+  b._busy = true;
   const q = b.questions[b.current];
   // 첫 답안 제출 시 이탈 감지 플래그 설정
   b._answered = true;
@@ -670,25 +675,23 @@ async function finishQuizDungeon() {
     showToast(`던전 실패 😢 | +${totalPts}🪙${abMsg?' · '+abMsg:''} 획득`);
   }
 
-  // 트랜잭션으로 중복 보상 완전 차단
-  const { runTransaction: runTx, getDocFromServer: getFromSrv } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  // 트랜잭션으로 중복 보상 완전 차단: 시작할 때 "진행 중"으로 기록된 사람만 한 번 보상
   const bossRef = doc(db, 'config', 'quizDungeonBoss');
   let alreadyDone = false;
   try {
-    await runTx(db, async (tx) => {
+    await runTransaction(db, async (tx) => {
       const freshBoss = await tx.get(bossRef);
       if (!freshBoss.exists()) { alreadyDone = true; return; }
       const bossNow = freshBoss.data();
-      if ((bossNow.participants||[]).includes(state.currentUser.uid)) { alreadyDone = true; return; }
-      // 참여자 기록
-      const newParticipants = [...(bossNow.participants||[]), state.currentUser.uid];
-      const newClearers = b.gameover ? (bossNow.clearers||[]) : [...(bossNow.clearers||[]), state.currentUser.uid];
-      tx.update(bossRef, {
-        participants: newParticipants,
-        clearers: newClearers,
+      if (!(bossNow.inProgress || []).includes(state.currentUser.uid)) { alreadyDone = true; return; }
+      const upd = {
+        inProgress: arrayRemove(state.currentUser.uid),
+        participants: arrayUnion(state.currentUser.uid),
         totalAnswered: increment(correct),
         totalQuestions: increment(total),
-      });
+      };
+      if (!b.gameover) upd.clearers = arrayUnion(state.currentUser.uid);
+      tx.update(bossRef, upd);
     });
   } catch(e) { alreadyDone = true; }
 
@@ -710,7 +713,7 @@ async function finishQuizDungeon() {
   // history
   const abMsg = Object.entries(abReward).filter(([,v])=>v>0).map(([k,v])=>`${k}+${v}`).join(' ');
   await addDoc(collection(db, 'history'), {
-    studentId: state.currentUser.uid, studentName: state.currentUser.displayName || '',
+    studentId: state.currentUser.uid, studentName: state.currentUser.name || '',
     delta: totalPts, reason: `문제 던전 (${correct}/${total} 정답)${abMsg?' ['+abMsg+']':''}`,
     type: 'plus', source: 'quizDungeon', createdAt: serverTimestamp()
   });
@@ -735,4 +738,13 @@ async function renderQuizResult() {
   document.getElementById('quizDungeonBattle').innerHTML = '';
   document.getElementById('dungeonLobby').style.display = '';
   await renderDungeonLobby();
+}
+
+// 문제 던전을 중간에 떠남 (도망·다른 메뉴): 참여는 이미 기록됐고, "진행 중" 표시만 지워요 (보상 없음)
+export async function leaveQuizRun() {
+  if (!state.currentUser?.uid) return;
+  try {
+    await updateDoc(doc(db, 'config', 'quizDungeonBoss'), { inProgress: arrayRemove(state.currentUser.uid) });
+  } catch (e) { /* 보스가 없어졌으면 무시 */ }
+  state.quizDungeonBoss = undefined;
 }

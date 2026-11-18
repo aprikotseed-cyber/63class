@@ -2,7 +2,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, initializeAuth, inMemoryPersistence, EmailAuthProvider, reauthenticateWithCredential, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc as _getDoc, getDocs as _getDocs, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, onSnapshot as _onSnapshot, serverTimestamp, increment, limit, startAfter, arrayUnion, getDocFromServer, writeBatch, deleteField } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc as _getDoc, getDocs as _getDocs, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, onSnapshot as _onSnapshot, serverTimestamp, increment, limit, startAfter, arrayUnion, arrayRemove, getDocFromServer, writeBatch, deleteField, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDkj-vid-uxIz0oTNrRdUP-XiGpCp-aNdI",
@@ -72,6 +72,7 @@ export function getHelperAuth() {
 // 다른 파일에서 쓰는 Firebase 함수들을 내보냄
 export {
   addDoc,
+  arrayRemove,
   arrayUnion,
   browserSessionPersistence,
   collection,
@@ -87,6 +88,7 @@ export {
   orderBy,
   query,
   reauthenticateWithCredential,
+  runTransaction,
   serverTimestamp,
   setDoc,
   setPersistence,
