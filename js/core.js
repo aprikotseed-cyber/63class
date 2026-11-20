@@ -1,6 +1,6 @@
 // core.js — 전역 상태·상수, 설정 캐시, 공통 유틸(토스트·모달)
-import { state } from './state.js?v=20261120a';
-import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
+import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261120b';
 
 // ===== 전역 상태 =====
 // (여러 파일이 함께 쓰는 상태는 state.js 에 있어요)
@@ -37,13 +37,17 @@ export async function loadTitleDeletedCache() {
 export async function getCfgSite()    { if (!_cfgSite)    { const d = await getDoc(doc(db,'config','site'));    _cfgSite    = d.exists()?d.data():{}; } return _cfgSite; }
 export async function getCfgTeacher() { if (!state._cfgTeacher) { const d = await getDoc(doc(db,'config','teacher')); state._cfgTeacher = d.exists()?d.data():{}; } return state._cfgTeacher; }
 
-// 내 교환 신청 목록. 학생은 로그인 때부터 실시간으로 받고 있으므로 그것을 그대로 쓰고(읽기 0),
-// 아직 안 받았거나(교사의 학생 뷰 등) 다른 사람이면 서버에서 읽어요.
+// 내 교환 신청 목록: 지난 신청 전체는 필요할 때 한 번 읽어 두고(세션 동안 재사용),
+// 실시간으로 받는 "대기 중" 신청을 그 위에 덧씌워요.
 export async function getMyExchanges() {
   const uid = state.currentUser?.uid;
-  if (uid && window._myExchangesReadyUid === uid) return state.exchanges.filter(e => e.studentId === uid);
-  const snap = await getDocs(query(collection(db, 'exchanges'), where('studentId', '==', uid)));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  if (!window._myExchangesFull || window._myExchangesFull.uid !== uid) {
+    const snap = await getDocs(query(collection(db, 'exchanges'), where('studentId', '==', uid)));
+    window._myExchangesFull = { uid, list: snap.docs.map(d => ({ id: d.id, ...d.data() })) };
+  }
+  const map = new Map(window._myExchangesFull.list.map(e => [e.id, e]));
+  state.exchanges.filter(e => e.studentId === uid && e.status === 'pending').forEach(e => map.set(e.id, e));
+  return [...map.values()];
 }
 
 // ===== 유틸 =====

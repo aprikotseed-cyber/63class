@@ -1,17 +1,17 @@
 // cards.js — 칭찬/벌점 카드 관리·부여·내역·회수
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, limit,
   orderBy, query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261120a';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261120a';
-import { formatTime } from './level.js?v=20261120a';
-import { discountHtml } from './shop.js?v=20261120a';
-import { reloadRewards, reloadStudents } from './realtime.js?v=20261120a';
-import { renderDashboard } from './dashboard.js?v=20261120a';
-import { makeAbilityTags } from './titles.js?v=20261120a';
-import { buildCharHtml } from './avatar.js?v=20261120a';
-import { fadePanel } from './ui.js?v=20261120a';
+} from './firebase.js?v=20261120b';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261120b';
+import { formatTime } from './level.js?v=20261120b';
+import { discountHtml } from './shop.js?v=20261120b';
+import { reloadRewards, reloadStudents } from './realtime.js?v=20261120b';
+import { renderDashboard } from './dashboard.js?v=20261120b';
+import { makeAbilityTags } from './titles.js?v=20261120b';
+import { buildCharHtml } from './avatar.js?v=20261120b';
+import { fadePanel } from './ui.js?v=20261120b';
 
 export let praiseCards = [];
 let currentCardTab = 'praise';
@@ -309,6 +309,8 @@ window.giveCard = async function() {
         points: increment(delta),
         // 칭찬카드는 누적포인트도 늘리고, 벌점카드는 누적포인트도 함께 깎음
         accumulatedPoints: increment(delta),
+        // 학생 화면의 새 카드 알림용 (학생은 받은 카드 전부를 실시간으로 읽지 않고 이 칸만 봐요)
+        lastCard: { id: `${Date.now()}_${c.id}`, title: c.title || '', emoji: c.emoji || '', type: c.type, point: c.point || 0, memo: memo || '' },
         ...abilityUpdate
       });
 

@@ -1,14 +1,14 @@
 // books.js — 독서량, 독서 완료 카드
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   addDoc, collection, db, doc, getDoc, getDocFromServer, getDocs, increment, query,
   serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261120a';
-import { closeModal, openModal, showToast } from './core.js?v=20261120a';
-import { checkAndGrantRankUp } from './level.js?v=20261120a';
-import { reloadStudents } from './realtime.js?v=20261120a';
-import { renderDashboard } from './dashboard.js?v=20261120a';
-import { praiseCards, reloadPraiseCards } from './cards.js?v=20261120a';
+} from './firebase.js?v=20261120b';
+import { closeModal, openModal, showToast } from './core.js?v=20261120b';
+import { checkAndGrantRankUp } from './level.js?v=20261120b';
+import { reloadStudents } from './realtime.js?v=20261120b';
+import { renderDashboard } from './dashboard.js?v=20261120b';
+import { praiseCards, reloadPraiseCards } from './cards.js?v=20261120b';
 
 // ===== 독서량 (교사/학생 공통) =====
 let _bookChartInstance = null;
@@ -475,7 +475,8 @@ window.confirmBookCardGrant = async function() {
     // 포인트 + 능력치 한 번에 처리
     const updateData = {
       points: increment(delta),
-      accumulatedPoints: increment(delta) // 벌점카드는 누적포인트도 함께 깎음
+      accumulatedPoints: increment(delta), // 벌점카드는 누적포인트도 함께 깎음
+      lastCard: { id: `${Date.now()}_${card.id}`, title: card.title || '', emoji: card.emoji || '', type: card.type, point: card.point || 0, memo: '독서 완료' }, // 학생 새 카드 알림용
     };
     const abUpdate = {};
     if (card.abilities) {

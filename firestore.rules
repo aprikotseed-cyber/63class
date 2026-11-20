@@ -13,7 +13,8 @@ service cloud.firestore {
       return signedIn() && request.auth.token.email == 'teacher@ourclass.kr';
     }
     // 홈페이지 문이 닫혀 있는지 (선생님 설정 → 🚪 홈페이지 문 열기·닫기)
-    // 닫혀 있으면 학생은 데이터를 읽고 쓸 수 없어요. 새로고침하지 않은 옛날 화면도 같이 멈춰요.
+    // 닫혀 있으면 학생은 아무것도 저장(쓰기)할 수 없어요. 새로고침하지 않은 옛날 화면도 마찬가지예요.
+    // (읽기까지 막으면 학생 요청마다 이 문서를 한 번 더 읽어서 하루 읽기 한도를 빨리 써요. 그래서 쓰기에만 걸어요.)
     function siteClosed() {
       return exists(/databases/$(database)/documents/config/closure)
         && get(/databases/$(database)/documents/config/closure).data.closed == true;
@@ -39,7 +40,10 @@ service cloud.firestore {
 
     // 그 밖의 모든 기록: 로그인한 사람만 (지금까지와 같은 범위)
     match /{collectionName}/{docId} {
-      allow read, write: if signedIn()
+      allow read: if signedIn()
+        && collectionName != 'studentSecrets'
+        && collectionName != 'config';
+      allow write: if signedIn()
         && collectionName != 'studentSecrets'
         && collectionName != 'config'
         && canUse();

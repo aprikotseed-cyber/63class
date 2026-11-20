@@ -1,16 +1,16 @@
 // roles.js — 1인1역 시스템
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, increment, limit, onSnapshot, orderBy,
   query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261120a';
-import { closeModal, openModal, showToast } from './core.js?v=20261120a';
-import { formatTime } from './level.js?v=20261120a';
-import { reloadStudents } from './realtime.js?v=20261120a';
-import { renderDashboard } from './dashboard.js?v=20261120a';
-import { getTodayStr } from './attendance.js?v=20261120a';
-import { buildStudentAuctionHtml } from './role-auction.js?v=20261120a';
-import { getCurrentWeekKey } from './books.js?v=20261120a';
+} from './firebase.js?v=20261120b';
+import { closeModal, openModal, showToast } from './core.js?v=20261120b';
+import { formatTime } from './level.js?v=20261120b';
+import { reloadStudents } from './realtime.js?v=20261120b';
+import { renderDashboard } from './dashboard.js?v=20261120b';
+import { getTodayStr } from './attendance.js?v=20261120b';
+import { buildStudentAuctionHtml } from './role-auction.js?v=20261120b';
+import { getCurrentWeekKey } from './books.js?v=20261120b';
 
 // ===== 1인1역 시스템 =====
 export const DAY_NAMES = ['','월','화','수','목','금','토','일'];
@@ -890,8 +890,15 @@ export async function renderMyRolesPage() {
   const { dates, monStr, friStr } = getThisWeekRange();
 
   // 이번 주 수행 로그
-  // (읽기 절약) 내 학기 전체 기록 대신 이번 주 기록만 조회 후 내 것만 거름
-  const logSnap = await getDocs(query(collection(db,'roleLogs'), where('date','>=',monStr), where('date','<=',friStr)));
+  // (읽기 절약) 이번 주 "내" 기록만 조회. 이 조회는 Firestore 복합 색인(roleLogs: studentId + date)이 필요해요.
+  // 색인이 아직 없으면 예전처럼 반 전체의 이번 주 기록을 읽어서 내 것만 걸러요 (화면은 똑같이 동작).
+  let logSnap;
+  try {
+    logSnap = await getDocs(query(collection(db,'roleLogs'), where('studentId','==',state.currentUser.uid), where('date','>=',monStr), where('date','<=',friStr)));
+  } catch (e) {
+    if (e?.code === 'failed-precondition') console.warn('1인1역 색인이 없어 반 전체 기록을 읽어요. 콘솔 링크로 색인을 만들면 읽기가 줄어요:', e.message);
+    logSnap = await getDocs(query(collection(db,'roleLogs'), where('date','>=',monStr), where('date','<=',friStr)));
+  }
   const logs = logSnap.docs.map(d=>({id:d.id,...d.data()})).filter(l=>l.studentId===state.currentUser.uid)
     .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   const todayLogMap = {};

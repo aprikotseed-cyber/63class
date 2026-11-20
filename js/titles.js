@@ -1,20 +1,20 @@
 // titles.js — 칭호 시스템 (목록·관리·회수·선물·장착)
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocFromServer, getDocs, increment, limit,
   orderBy, query, serverTimestamp, setDoc, updateDoc, where
-} from './firebase.js?v=20261120a';
+} from './firebase.js?v=20261120b';
 import {
   GRADE_LABELS, GRADE_ORDER, closeModal, getMyStudentData, loadTitleDeletedCache,
   loadTitleInventoryCache, openModal, showToast
-} from './core.js?v=20261120a';
-import { checkAndGrantRankUp } from './level.js?v=20261120a';
-import { reloadStudents } from './realtime.js?v=20261120a';
-import { renderDashboard } from './dashboard.js?v=20261120a';
-import { initFrameGrids, loadCustomFrames, renderFrameGrid } from './frames.js?v=20261120a';
-import { buildCharHtml, renderAvatarManage } from './avatar.js?v=20261120a';
-import { renderStudentSettings } from './profile.js?v=20261120a';
-import { renderPetManageGrid } from './pets.js?v=20261120a';
+} from './core.js?v=20261120b';
+import { checkAndGrantRankUp } from './level.js?v=20261120b';
+import { reloadStudents } from './realtime.js?v=20261120b';
+import { renderDashboard } from './dashboard.js?v=20261120b';
+import { initFrameGrids, loadCustomFrames, renderFrameGrid } from './frames.js?v=20261120b';
+import { buildCharHtml, renderAvatarManage } from './avatar.js?v=20261120b';
+import { renderStudentSettings } from './profile.js?v=20261120b';
+import { renderPetManageGrid } from './pets.js?v=20261120b';
 
 export async function renderTitlesPage() {
   const isTeacher = state.currentUser?.role === 'teacher';

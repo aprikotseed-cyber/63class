@@ -1,16 +1,16 @@
 // dungeon.js — 챌린지 던전 (학생: 로비·전투·단체 던전)
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   addDoc, arrayUnion, collection, db, deleteDoc, doc, getDoc, getDocs, increment,
   runTransaction, serverTimestamp, updateDoc
-} from './firebase.js?v=20261120a';
-import { claimRun, isPreview, markRunUsed, releaseRun, releaseStaleRuns, rewardRun } from './dungeon-run.js?v=20261120a';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261120a';
-import { getTodayStr } from './attendance.js?v=20261120a';
-import { loadRoles, roles } from './roles.js?v=20261120a';
-import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261120a';
-import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261120a';
-import { buildCharHtml, getStudentChar } from './avatar.js?v=20261120a';
+} from './firebase.js?v=20261120b';
+import { claimRun, isPreview, markRunUsed, releaseRun, releaseStaleRuns, rewardRun } from './dungeon-run.js?v=20261120b';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261120b';
+import { getTodayStr } from './attendance.js?v=20261120b';
+import { loadRoles, roles } from './roles.js?v=20261120b';
+import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261120b';
+import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261120b';
+import { buildCharHtml, getStudentChar } from './avatar.js?v=20261120b';
 
 // ===== ⚔️ 챌린지 던전 =====
 window.startDungeonChallenge = async function() {

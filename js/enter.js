@@ -1,21 +1,21 @@
 // enter.js — 로그인 후 앱 진입, 대기 중 알림 확인, 로그아웃
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   auth, collection, db, deleteDoc, doc, getDocs, onSnapshot, query, signOut, updateDoc, where
-} from './firebase.js?v=20261120a';
-import { getCfgTeacher, getMyStudentData } from './core.js?v=20261120a';
-import { resetAutoLogoutTimer } from './auth.js?v=20261120a';
-import { loadSiteSettings } from './site-config.js?v=20261120a';
+} from './firebase.js?v=20261120b';
+import { getCfgTeacher, getMyStudentData } from './core.js?v=20261120b';
+import { resetAutoLogoutTimer } from './auth.js?v=20261120b';
+import { loadSiteSettings } from './site-config.js?v=20261120b';
 import {
   listenExchanges, listenMessages, listenRewards, listenStudents, pushNotif
-} from './realtime.js?v=20261120a';
-import { renderStudentPendingExchanges } from './exchanges.js?v=20261120a';
-import { loadAttendPoint } from './attendance.js?v=20261120a';
-import { checkMissedRoles } from './roles.js?v=20261120a';
-import { escapeHtml } from './board.js?v=20261120a';
-import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261120a';
-import { initStudentAvatar } from './avatar.js?v=20261120a';
-import { stopWatchingClosure, watchClosure } from './closure.js?v=20261120a';
+} from './realtime.js?v=20261120b';
+import { renderStudentPendingExchanges } from './exchanges.js?v=20261120b';
+import { loadAttendPoint } from './attendance.js?v=20261120b';
+import { checkMissedRoles } from './roles.js?v=20261120b';
+import { escapeHtml } from './board.js?v=20261120b';
+import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261120b';
+import { initStudentAvatar } from './avatar.js?v=20261120b';
+import { stopWatchingClosure, watchClosure } from './closure.js?v=20261120b';
 
 // ===== 앱 진입 =====
 export async function enterApp() {
@@ -52,40 +52,34 @@ export async function enterApp() {
     );
   }
   listenMessages();
-  // 학생: 새 카드/칭호 실시간 감지
+  // 학생: 새 카드 알림
+  // (읽기 절약) 예전엔 로그인할 때마다 받은 카드 전부를 실시간으로 읽었어요(학기 내내 계속 늘어남).
+  // 이제 선생님이 카드를 줄 때 학생 문서에 lastCard 를 함께 적고, 이미 구독 중인 "내 학생 문서"로 알아채요.
   if (state.currentUser?.role === 'student') {
-    let _firstFire = true;
-    const cardQ = query(
-      collection(db, 'givenCards'),
-      where('studentId', '==', state.currentUser.uid)
-    );
-    onSnapshot(cardQ, async snap => {
-      // 첫 fire는 기존 데이터 로드이므로 캐시만 업데이트하고 팝업 안 띄움
-      window._myGivenCards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (_firstFire) { _firstFire = false; return; }
-      // 이후 추가된 카드만 팝업
-      snap.docChanges().forEach(async change => {
-        if (change.type !== 'added') return;
-        const c = change.doc.data();
-        const _tc = await getCfgTeacher();
-        const teacherEmoji = _tc.charUrl || _tc.avatarEmoji || '👩‍🏫';
-        if ((c.cardType||c.type) === 'praise') {
-          pushNotif('💓 칭찬 카드를 받았어요!', teacherEmoji,
-            `선생님께서 <strong>'${c.cardTitle}'</strong> 칭찬 카드를 부여해 주셨어요!<br>` +
-            `<span style="color:var(--primary);font-weight:700;">+${c.cardPoint}🪙</span>` +
-            `${c.memo ? `<br><span style="font-size:12px;color:var(--text-secondary);">메모: ${c.memo}</span>` : ''}`
-          );
-        } else {
-          pushNotif('⚠️ 벌점 카드를 받았어요', teacherEmoji,
-            `선생님께서 <strong>'${c.cardTitle}'</strong> 벌점 카드를 부여하셨어요.<br>` +
-            `<span style="color:#e11d48;font-weight:700;">-${c.cardPoint}🪙</span>` +
-            `<br><span style="font-size:12px;color:#e11d48;">누적 포인트도 ${c.cardPoint}만큼 함께 줄었어요</span>` +
-            `${c.memo ? `<br><span style="font-size:12px;color:var(--text-secondary);">메모: ${c.memo}</span>` : ''}`
-          );
-        }
-        window._myHistory = null; // 내역 캐시 무효화
-      });
-    });
+    let seenCardId;
+    window._onMyStudentDoc = async (me) => {
+      const lc = me.lastCard;
+      if (seenCardId === undefined) { seenCardId = lc?.id || null; return; } // 첫 신호: 기준만 잡음
+      if (!lc?.id || lc.id === seenCardId) return;
+      seenCardId = lc.id;
+      window._myGivenCards = null; window._myHistory = null; // 카드 개수·내역은 다음에 새로 읽기
+      const _tc = await getCfgTeacher();
+      const teacherEmoji = _tc.charUrl || _tc.avatarEmoji || '👩‍🏫';
+      if (lc.type === 'praise') {
+        pushNotif('💓 칭찬 카드를 받았어요!', teacherEmoji,
+          `선생님께서 <strong>'${lc.title}'</strong> 칭찬 카드를 부여해 주셨어요!<br>` +
+          `<span style="color:var(--primary);font-weight:700;">+${lc.point}🪙</span>` +
+          `${lc.memo ? `<br><span style="font-size:12px;color:var(--text-secondary);">메모: ${lc.memo}</span>` : ''}`
+        );
+      } else {
+        pushNotif('⚠️ 벌점 카드를 받았어요', teacherEmoji,
+          `선생님께서 <strong>'${lc.title}'</strong> 벌점 카드를 부여하셨어요.<br>` +
+          `<span style="color:#e11d48;font-weight:700;">-${lc.point}🪙</span>` +
+          `<br><span style="font-size:12px;color:#e11d48;">누적 포인트도 ${lc.point}만큼 함께 줄었어요</span>` +
+          `${lc.memo ? `<br><span style="font-size:12px;color:var(--text-secondary);">메모: ${lc.memo}</span>` : ''}`
+        );
+      }
+    };
   }
 
   if (state.currentUser.role === 'teacher') {
@@ -140,15 +134,15 @@ export async function enterApp() {
     listenStudents(); // 내 문서만 실시간 구독
     // 새로고침으로 인한 진행중 잠금 해제
     try { await deleteDoc(doc(db, 'config', `quizProgress_${state.currentUser.uid}`)); } catch(e) {}
-    // 학생 자신의 교환 신청 실시간 구독
+    // 학생 자신의 "대기 중" 교환 신청만 실시간 구독 (읽기 절약: 지난 신청 전체는 상점·보관함에서 필요할 때만)
+    // 같다(==) 조건 2개라 별도 색인 필요 없음
     onSnapshot(
-      query(collection(db, 'exchanges'), where('studentId', '==', state.currentUser.uid)),
+      query(collection(db, 'exchanges'), where('studentId', '==', state.currentUser.uid), where('status', '==', 'pending')),
       snap => {
-        // 학생 본인 exchanges만 로컬에 반영
-        const myExchanges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        // 기존 exchanges에서 내 것 제거 후 최신으로 교체
-        state.exchanges = [...state.exchanges.filter(e => e.studentId !== state.currentUser.uid), ...myExchanges];
-        window._myExchangesReadyUid = state.currentUser.uid; // 상점·보관함이 이 실시간 데이터를 바로 쓰도록 표시
+        const myPending = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.exchanges = [...state.exchanges.filter(e => e.studentId !== state.currentUser.uid), ...myPending];
+        // 승인·거절·취소로 대기 목록에서 빠진 게 있으면 전체 목록을 다음에 새로 읽기
+        if (snap.docChanges().some(c => c.type !== 'added')) window._myExchangesFull = null;
         renderStudentPendingExchanges();
       }
     );
