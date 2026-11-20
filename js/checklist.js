@@ -1,14 +1,14 @@
 // checklist.js — 체크표 시스템
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   addDoc, collection, db, deleteDoc, doc, getDocFromServer, getDocs, increment, limit, orderBy,
   query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261120a';
-import { closeModal, openModal, showToast } from './core.js?v=20261120a';
-import { checkAndGrantRankUp } from './level.js?v=20261120a';
-import { reloadStudents } from './realtime.js?v=20261120a';
-import { renderDashboard } from './dashboard.js?v=20261120a';
-import { praiseCards, reloadPraiseCards } from './cards.js?v=20261120a';
+} from './firebase.js?v=20261120b';
+import { closeModal, openModal, showToast } from './core.js?v=20261120b';
+import { checkAndGrantRankUp } from './level.js?v=20261120b';
+import { reloadStudents } from './realtime.js?v=20261120b';
+import { renderDashboard } from './dashboard.js?v=20261120b';
+import { praiseCards, reloadPraiseCards } from './cards.js?v=20261120b';
 
 // 초기 config 설정 확인
 
@@ -259,7 +259,8 @@ window.confirmCheckCardGrant = async function() {
   if (!targets.length) { closeModal('checkCardGrantModal'); showToast('부여할 학생이 없어요'); return; }
   const delta=card.type==='praise'?(card.point||0):-(card.point||0);
   for (const s of targets) {
-    const checkUpdateData = {points:increment(delta),accumulatedPoints:increment(delta)}; // 벌점카드는 누적포인트도 함께 깎음
+    const checkUpdateData = {points:increment(delta),accumulatedPoints:increment(delta), // 벌점카드는 누적포인트도 함께 깎음
+      lastCard:{id:`${Date.now()}_${cardId}`,title:card.title||'',emoji:card.emoji||'',type:card.type,point:card.point||0,memo:'체크표'}}; // 학생 새 카드 알림용
     const checkAbUpdate = {};
     if (card.abilities) {
       for (const [k,v] of Object.entries(card.abilities)) {

@@ -1,22 +1,22 @@
 // realtime.js — 교사 데이터 로드, 알림 큐, Firestore 실시간 리스너
-import { state } from './state.js?v=20261120a';
+import { state } from './state.js?v=20261120b';
 import {
   collection, db, doc, getDocs, limit, onSnapshot, orderBy, query, updateDoc, where
-} from './firebase.js?v=20261120a';
-import { closeModal, openModal, showToast } from './core.js?v=20261120a';
-import { renderShopPage } from './shop.js?v=20261120a';
-import { renderDashboard } from './dashboard.js?v=20261120a';
-import { renderStudentList } from './students.js?v=20261120a';
-import { renderExchanges, renderStudentPendingExchanges } from './exchanges.js?v=20261120a';
-import { renderMessages } from './messages.js?v=20261120a';
-import { renderStudentHome, renderTeacherHome } from './home.js?v=20261120a';
-import { renderInventoryDecor } from './frames.js?v=20261120a';
+} from './firebase.js?v=20261120b';
+import { closeModal, openModal, showToast } from './core.js?v=20261120b';
+import { renderShopPage } from './shop.js?v=20261120b';
+import { renderDashboard } from './dashboard.js?v=20261120b';
+import { renderStudentList } from './students.js?v=20261120b';
+import { renderExchanges, renderStudentPendingExchanges } from './exchanges.js?v=20261120b';
+import { renderMessages } from './messages.js?v=20261120b';
+import { renderStudentHome, renderTeacherHome } from './home.js?v=20261120b';
+import { renderInventoryDecor } from './frames.js?v=20261120b';
 import {
   inventoryRewardCategory, renderDecorShop, renderInventoryAvatar, renderInventoryTitles
-} from './inventory.js?v=20261120a';
-import { renderStudentSettings } from './profile.js?v=20261120a';
-import { renderMyPoints } from './points.js?v=20261120a';
-import { renderInventoryPet } from './pets.js?v=20261120a';
+} from './inventory.js?v=20261120b';
+import { renderStudentSettings } from './profile.js?v=20261120b';
+import { renderMyPoints } from './points.js?v=20261120b';
+import { renderInventoryPet } from './pets.js?v=20261120b';
 
 // ===== 데이터 로드 =====
 // reloadStudents / reloadRewards / reloadExchanges는
@@ -111,6 +111,7 @@ export function listenStudents() {
     state.unsubStudents = onSnapshot(doc(db, 'students', state.currentUser.uid), docSnap => {
       if (!docSnap.exists()) return;
       const me = { id: docSnap.id, ...docSnap.data() };
+      try { window._onMyStudentDoc?.(me); } catch (e) { console.warn(e); } // 새 카드 알림 등
       // students 배열에서 내 정보만 업데이트
       const idx = state.students.findIndex(s => s.id === state.currentUser.uid);
       if (idx >= 0) state.students[idx] = me;
