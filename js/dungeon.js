@@ -1,16 +1,16 @@
 // dungeon.js — 챌린지 던전 (학생: 로비·전투·단체 던전)
-import { state } from './state.js?v=20261118a';
+import { state } from './state.js?v=20261120a';
 import {
   addDoc, arrayUnion, collection, db, deleteDoc, doc, getDoc, getDocs, increment,
   runTransaction, serverTimestamp, updateDoc
-} from './firebase.js?v=20261118a';
-import { claimRun, markRunUsed, releaseRun, releaseStaleRuns, rewardRun } from './dungeon-run.js?v=20261118a';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261118a';
-import { getTodayStr } from './attendance.js?v=20261118a';
-import { loadRoles, roles } from './roles.js?v=20261118a';
-import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261118a';
-import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261118a';
-import { buildCharHtml, getStudentChar } from './avatar.js?v=20261118a';
+} from './firebase.js?v=20261120a';
+import { claimRun, isPreview, markRunUsed, releaseRun, releaseStaleRuns, rewardRun } from './dungeon-run.js?v=20261120a';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261120a';
+import { getTodayStr } from './attendance.js?v=20261120a';
+import { loadRoles, roles } from './roles.js?v=20261120a';
+import { DEFAULT_MONSTERS, calcBattleStats } from './dungeon-admin.js?v=20261120a';
+import { loadQuizDungeonBoss, renderQuizDungeonSection } from './quiz-dungeon.js?v=20261120a';
+import { buildCharHtml, getStudentChar } from './avatar.js?v=20261120a';
 
 // ===== ⚔️ 챌린지 던전 =====
 window.startDungeonChallenge = async function() {
@@ -632,6 +632,11 @@ window.doPlayerAction = async function(action) {
       renderBattle();
       return;
     }
+    if (got.preview) {
+      b.logs.push({cls:'system', txt:'👁️ 학생 뷰(연습)라 보상은 실제로 지급되지 않았어요.'});
+      renderBattle();
+      return;
+    }
     const { rankBonus, rankUpNames2 } = got;
     if (rankBonus > 0) {
       b.logs.push({cls:'system', txt:`🏆 랭크업! ${rankUpNames2.join(', ')} — 보상 +${rankBonus}🪙`});
@@ -849,6 +854,15 @@ window.doRaidAction = async function(action) {
     const bossRef = doc(db, 'config', 'dungeonBoss');
     const meRef = doc(db, 'students', state.currentUser.uid);
     let res;
+    if (isPreview()) {
+      // 학생 뷰(연습): 실제 보스 체력은 건드리지 않고 화면에서만 계산
+      const hp = Math.max(0, b.enemyHp - dmg);
+      b.enemyHp = hp;
+      b.done = hp <= 0 || b.heroHp <= 0;
+      b.logs.push({cls:'system', txt:`👁️ 학생 뷰(연습)라 실제 보스 체력은 그대로예요. (연습 HP ${hp.toLocaleString()})`});
+      renderRaidBattle();
+      return;
+    }
     try {
       res = await runTransaction(db, async (tx) => {
         const bs = await tx.get(bossRef);

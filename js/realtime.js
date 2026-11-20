@@ -1,22 +1,22 @@
 // realtime.js — 교사 데이터 로드, 알림 큐, Firestore 실시간 리스너
-import { state } from './state.js?v=20261118a';
+import { state } from './state.js?v=20261120a';
 import {
   collection, db, doc, getDocs, limit, onSnapshot, orderBy, query, updateDoc, where
-} from './firebase.js?v=20261118a';
-import { closeModal, openModal, showToast } from './core.js?v=20261118a';
-import { renderShopPage } from './shop.js?v=20261118a';
-import { renderDashboard } from './dashboard.js?v=20261118a';
-import { renderStudentList } from './students.js?v=20261118a';
-import { renderExchanges, renderStudentPendingExchanges } from './exchanges.js?v=20261118a';
-import { renderMessages } from './messages.js?v=20261118a';
-import { renderStudentHome, renderTeacherHome } from './home.js?v=20261118a';
-import { renderInventoryDecor } from './frames.js?v=20261118a';
+} from './firebase.js?v=20261120a';
+import { closeModal, openModal, showToast } from './core.js?v=20261120a';
+import { renderShopPage } from './shop.js?v=20261120a';
+import { renderDashboard } from './dashboard.js?v=20261120a';
+import { renderStudentList } from './students.js?v=20261120a';
+import { renderExchanges, renderStudentPendingExchanges } from './exchanges.js?v=20261120a';
+import { renderMessages } from './messages.js?v=20261120a';
+import { renderStudentHome, renderTeacherHome } from './home.js?v=20261120a';
+import { renderInventoryDecor } from './frames.js?v=20261120a';
 import {
   inventoryRewardCategory, renderDecorShop, renderInventoryAvatar, renderInventoryTitles
-} from './inventory.js?v=20261118a';
-import { renderStudentSettings } from './profile.js?v=20261118a';
-import { renderMyPoints } from './points.js?v=20261118a';
-import { renderInventoryPet } from './pets.js?v=20261118a';
+} from './inventory.js?v=20261120a';
+import { renderStudentSettings } from './profile.js?v=20261120a';
+import { renderMyPoints } from './points.js?v=20261120a';
+import { renderInventoryPet } from './pets.js?v=20261120a';
 
 // ===== 데이터 로드 =====
 // reloadStudents / reloadRewards / reloadExchanges는
