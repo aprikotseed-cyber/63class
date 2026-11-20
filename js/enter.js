@@ -1,21 +1,21 @@
 // enter.js — 로그인 후 앱 진입, 대기 중 알림 확인, 로그아웃
-import { state } from './state.js?v=20261118a';
+import { state } from './state.js?v=20261120a';
 import {
   auth, collection, db, deleteDoc, doc, getDocs, onSnapshot, query, signOut, updateDoc, where
-} from './firebase.js?v=20261118a';
-import { getCfgTeacher, getMyStudentData } from './core.js?v=20261118a';
-import { resetAutoLogoutTimer } from './auth.js?v=20261118a';
-import { loadSiteSettings } from './site-config.js?v=20261118a';
+} from './firebase.js?v=20261120a';
+import { getCfgTeacher, getMyStudentData } from './core.js?v=20261120a';
+import { resetAutoLogoutTimer } from './auth.js?v=20261120a';
+import { loadSiteSettings } from './site-config.js?v=20261120a';
 import {
   listenExchanges, listenMessages, listenRewards, listenStudents, pushNotif
-} from './realtime.js?v=20261118a';
-import { renderStudentPendingExchanges } from './exchanges.js?v=20261118a';
-import { loadAttendPoint } from './attendance.js?v=20261118a';
-import { checkMissedRoles } from './roles.js?v=20261118a';
-import { escapeHtml } from './board.js?v=20261118a';
-import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261118a';
-import { initStudentAvatar } from './avatar.js?v=20261118a';
-import { stopWatchingClosure, watchClosure } from './closure.js?v=20261118a';
+} from './realtime.js?v=20261120a';
+import { renderStudentPendingExchanges } from './exchanges.js?v=20261120a';
+import { loadAttendPoint } from './attendance.js?v=20261120a';
+import { checkMissedRoles } from './roles.js?v=20261120a';
+import { escapeHtml } from './board.js?v=20261120a';
+import { updateQuizDungeonBadge } from './quiz-dungeon.js?v=20261120a';
+import { initStudentAvatar } from './avatar.js?v=20261120a';
+import { stopWatchingClosure, watchClosure } from './closure.js?v=20261120a';
 
 // ===== 앱 진입 =====
 export async function enterApp() {

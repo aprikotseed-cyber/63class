@@ -1,11 +1,12 @@
 // quiz-dungeon.js — 문제 던전
-import { state } from './state.js?v=20261118a';
+import { state } from './state.js?v=20261120a';
 import {
   addDoc, arrayRemove, arrayUnion, collection, db, deleteDoc, doc, getDoc, increment, runTransaction,
   serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261118a';
-import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261118a';
-import { pushNotif } from './realtime.js?v=20261118a';
+} from './firebase.js?v=20261120a';
+import { closeModal, getCfgTeacher, openModal, showToast } from './core.js?v=20261120a';
+import { pushNotif } from './realtime.js?v=20261120a';
+import { isPreview as isTeacherPreview } from './dungeon-run.js?v=20261120a';
 
 // ===================================================
 // 📚 문제 던전 시스템
@@ -468,7 +469,13 @@ window.startQuizDungeonFromSection = async function() {
   window._enteringQuiz = true;
   const bossRef = doc(db, 'config', 'quizDungeonBoss');
   let claim;
-  try {
+  if (isTeacherPreview()) {
+    // 학생 뷰(연습): 참여 기록 없이 문제만 풀어 봐요
+    const pv = await getDoc(bossRef);
+    window._enteringQuiz = false;
+    if (!pv.exists() || !pv.data()?.active) return showToast('문제 던전이 활성화되지 않았어요');
+    claim = 'preview';
+  } else try {
     claim = await runTransaction(db, async (tx) => {
       const snap = await tx.get(bossRef);
       if (!snap.exists() || !snap.data()?.active) return 'inactive';
@@ -480,6 +487,7 @@ window.startQuizDungeonFromSection = async function() {
   } catch (e) { window._enteringQuiz = false; return showToast('오류: ' + e.message); }
   window._enteringQuiz = false;
   state.quizDungeonBoss = undefined;
+  if (claim === 'preview') showToast('👁️ 학생 뷰(연습): 참여 기록과 보상 없이 풀어 볼 수 있어요');
   if (claim === 'inactive') return showToast('문제 던전이 활성화되지 않았어요');
   if (claim === 'already') return showToast('이미 참여한 문제 던전이에요');
 
@@ -675,6 +683,7 @@ async function finishQuizDungeon() {
     showToast(`던전 실패 😢 | +${totalPts}🪙${abMsg?' · '+abMsg:''} 획득`);
   }
 
+  if (isTeacherPreview()) { renderQuizResult(); return; } // 학생 뷰(연습): 저장·보상 없음
   // 트랜잭션으로 중복 보상 완전 차단: 시작할 때 "진행 중"으로 기록된 사람만 한 번 보상
   const bossRef = doc(db, 'config', 'quizDungeonBoss');
   let alreadyDone = false;
@@ -742,7 +751,7 @@ async function renderQuizResult() {
 
 // 문제 던전을 중간에 떠남 (도망·다른 메뉴): 참여는 이미 기록됐고, "진행 중" 표시만 지워요 (보상 없음)
 export async function leaveQuizRun() {
-  if (!state.currentUser?.uid) return;
+  if (!state.currentUser?.uid || isTeacherPreview()) return;
   try {
     await updateDoc(doc(db, 'config', 'quizDungeonBoss'), { inProgress: arrayRemove(state.currentUser.uid) });
   } catch (e) { /* 보스가 없어졌으면 무시 */ }

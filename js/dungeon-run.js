@@ -6,9 +6,12 @@
 //  2) 첫 공격 때 "사용함(used)" 표시 — 그 뒤로는 나가도 기회가 돌아오지 않아요
 //  3) 공격 전에 나가면(새로고침 포함) 기회를 돌려줘요(release) — 아무것도 얻은 게 없으니까요
 //  4) 보상은 이번 도전 번호가 맞고 아직 안 받았을 때만 한 번 (트랜잭션)
-import { state } from './state.js?v=20261118a';
-import { db, deleteField, doc, runTransaction } from './firebase.js?v=20261118a';
-import { getTodayStr } from './attendance.js?v=20261118a';
+import { state } from './state.js?v=20261120a';
+import { auth, db, deleteField, doc, runTransaction } from './firebase.js?v=20261120a';
+import { getTodayStr } from './attendance.js?v=20261120a';
+
+// 선생님의 "학생 뷰": 학생 데이터가 없는 연습 모드 — 기회·보상·보스 체력 등 실제 데이터를 쓰지 않아요
+export const isPreview = () => auth.currentUser?.email === 'teacher@ourclass.kr';
 
 export const RUN_FIELD = { solo: 'dungeonSoloRun', challenge: 'dungeonChallengeRun', raid: 'dungeonRaidRun' };
 export const DATE_FIELD = { solo: 'dungeonSoloDate', challenge: 'dungeonChallengeDate', raid: 'dungeonRaidDate' };
@@ -28,6 +31,7 @@ function patchLocal(update) {
 
 // 기회 선점: 오늘 이미 썼으면 null, 아니면 이번 도전 번호
 export async function claimRun(kind) {
+  if (isPreview()) return 'preview-' + newRunId();
   const today = getTodayStr();
   const id = newRunId();
   const update = await runTransaction(db, async (tx) => {
@@ -48,6 +52,7 @@ export async function claimRun(kind) {
 
 // 첫 공격: 이 도전을 "사용함"으로 (그 뒤엔 나가도 기회가 돌아오지 않음)
 export async function markRunUsed(kind, runId) {
+  if (isPreview()) return true;
   return runTransaction(db, async (tx) => {
     const snap = await tx.get(meRef());
     const run = snap.data()?.[RUN_FIELD[kind]];
@@ -59,6 +64,7 @@ export async function markRunUsed(kind, runId) {
 
 // 공격 전에 나감: 기회 돌려주기 (runId 를 주면 그 도전일 때만)
 export async function releaseRun(kind, runId) {
+  if (isPreview()) return false;
   const today = getTodayStr();
   const update = await runTransaction(db, async (tx) => {
     const snap = await tx.get(meRef());
@@ -78,6 +84,7 @@ export async function releaseRun(kind, runId) {
 // 보상: 이번 도전이 맞고 아직 안 받았을 때만. buildUpdate(학생데이터) 가 돌려준 내용을 함께 저장.
 // 성공하면 buildUpdate 가 돌려준 값을, 아니면 null 을 돌려줘요.
 export async function rewardRun(kind, runId, buildUpdate) {
+  if (isPreview()) return { ...(buildUpdate({}).info || {}), preview: true }; // 연습: 저장 안 함
   return runTransaction(db, async (tx) => {
     const snap = await tx.get(meRef());
     const d = snap.exists() ? snap.data() : {};
@@ -92,6 +99,7 @@ export async function rewardRun(kind, runId, buildUpdate) {
 // 로비에 들어올 때: 이 화면에서 진행 중인 전투가 없는데 "선점만 하고 공격 안 한" 기회가 있으면 돌려줘요
 // (공격 전에 새로고침하거나 창을 닫은 경우)
 export async function releaseStaleRuns(activeRunIds = []) {
+  if (isPreview()) return;
   const me = state.students.find((s) => s.id === state.currentUser?.uid);
   if (!me) return;
   const today = getTodayStr();
