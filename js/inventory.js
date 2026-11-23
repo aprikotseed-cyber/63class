@@ -1,23 +1,23 @@
 // inventory.js — 내 보관함 (보상·칭호·꾸미기·아바타)
-import { state } from './state.js?v=20261120b';
+import { state } from './state.js?v=20261123a';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs, increment, query, serverTimestamp,
   setDoc, updateDoc, where
-} from './firebase.js?v=20261120b';
+} from './firebase.js?v=20261123a';
 import {
-  GRADE_ORDER, closeModal, getMyExchanges, getMyStudentData, loadTitleInventoryCache, openModal, showToast
-} from './core.js?v=20261120b';
-import { formatTime } from './level.js?v=20261120b';
-import { renderStudentHome } from './home.js?v=20261120b';
-import { initFrameGrids, loadCustomFrames, renderInventoryDecor } from './frames.js?v=20261120b';
-import { GRADE_POINTS, getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261120b';
+  GRADE_ORDER, closeModal, getMyExchanges, getMyStudentData, patchMyExchange, loadTitleInventoryCache, openModal, showToast
+} from './core.js?v=20261123a';
+import { formatTime } from './level.js?v=20261123a';
+import { renderStudentHome } from './home.js?v=20261123a';
+import { initFrameGrids, loadCustomFrames, renderInventoryDecor } from './frames.js?v=20261123a';
+import { GRADE_POINTS, getTitleBadgeHtml, reloadTitles, titles } from './titles.js?v=20261123a';
 import {
   AVATAR_CATS, AVATAR_CAT_ICONS, AVATAR_MANNEQUIN, avatarInventory, avatarItemImg, avatarItemList,
   loadAvatarEquipped, loadAvatarInventory, loadAvatarItemList
-} from './avatar.js?v=20261120b';
-import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261120b';
-import { renderStudentSettings } from './profile.js?v=20261120b';
-import { renderMyPoints } from './points.js?v=20261120b';
+} from './avatar.js?v=20261123a';
+import { AVATAR_LAYER_ORDER } from './avatar-shop.js?v=20261123a';
+import { renderStudentSettings } from './profile.js?v=20261123a';
+import { renderMyPoints } from './points.js?v=20261123a';
 
 // ===== 내 보관함: 아바타 탭 =====
 export async function renderInventoryAvatar() {
@@ -343,6 +343,7 @@ window.bulkUseRewards = async function(cat) {
   for (const item of pending) {
     try {
       await updateDoc(doc(db, 'exchanges', item.id), { status: 'used', usedAt: serverTimestamp() });
+      patchMyExchange(item.id, { status: 'used' });
       done++;
     } catch(e) { console.error('일괄 사용 오류:', item.name, e); }
   }
@@ -367,6 +368,7 @@ window.confirmUseReward = async function() {
   }
   try {
     await updateDoc(doc(db, 'exchanges', exchangeId), { status: 'used', usedAt: serverTimestamp() });
+    patchMyExchange(exchangeId, { status: 'used' });
     closeModal('useRewardModal');
     showToast(`'${name}' 사용됐어요! ✅`);
     filterInventoryReward(inventoryRewardCategory);
@@ -390,6 +392,7 @@ window.refundReward = async function(exchangeId, cost, name, elId) {
       }
     }
     await deleteDoc(doc(db, 'exchanges', exchangeId));
+    patchMyExchange(exchangeId, null);
     await updateDoc(doc(db, 'students', state.currentUser.uid), { points: increment(cost) });
     await addDoc(collection(db, 'history'), {
       studentId: state.currentUser.uid, studentName: state.currentUser.name,

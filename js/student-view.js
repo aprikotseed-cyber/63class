@@ -1,6 +1,6 @@
 // student-view.js — 교사의 학생 뷰 전환
-import { state } from './state.js?v=20261120b';
-import { showToast } from './core.js?v=20261120b';
+import { state } from './state.js?v=20261123a';
+import { showToast } from './core.js?v=20261123a';
 
 // ===== 👁️ 학생 뷰 전환 =====
 let _teacherUserBackup = null;
