@@ -1,16 +1,16 @@
 // admin.js — 데이터 초기화, 학생 계정 관리·재생성·마이그레이션
-import { state } from './state.js?v=20261120b';
+import { state } from './state.js?v=20261123a';
 import {
   addDoc, collection, db, deleteDoc, doc, getDoc, getDocs,
   increment, query, serverTimestamp, setDoc, updateDoc, updatePassword,
   where
-} from './firebase.js?v=20261120b';
-import { closeModal, openModal, showToast } from './core.js?v=20261120b';
-import { makePw, nameToEmail } from './level.js?v=20261120b';
-import { getPwHint, helperCreateStudent, helperSignInStudent, helperSignOut, removePwHint, savePwHint } from './accounts.js?v=20261120b';
-import { reloadStudents } from './realtime.js?v=20261120b';
-import { renderDashboard } from './dashboard.js?v=20261120b';
-import { renderStudentList } from './students.js?v=20261120b';
+} from './firebase.js?v=20261123a';
+import { closeModal, openModal, showToast } from './core.js?v=20261123a';
+import { makePw, nameToEmail } from './level.js?v=20261123a';
+import { getPwHint, helperCreateStudent, helperSignInStudent, helperSignOut, removePwHint, savePwHint } from './accounts.js?v=20261123a';
+import { reloadStudents } from './realtime.js?v=20261123a';
+import { renderDashboard } from './dashboard.js?v=20261123a';
+import { renderStudentList } from './students.js?v=20261123a';
 
 // ===== 데이터 초기화 =====
 // 전체 프레임 인벤토리 초기화

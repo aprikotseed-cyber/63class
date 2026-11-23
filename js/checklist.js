@@ -1,14 +1,14 @@
 // checklist.js — 체크표 시스템
-import { state } from './state.js?v=20261120b';
+import { state } from './state.js?v=20261123a';
 import {
   addDoc, collection, db, deleteDoc, doc, getDocFromServer, getDocs, increment, limit, orderBy,
   query, serverTimestamp, updateDoc, where
-} from './firebase.js?v=20261120b';
-import { closeModal, openModal, showToast } from './core.js?v=20261120b';
-import { checkAndGrantRankUp } from './level.js?v=20261120b';
-import { reloadStudents } from './realtime.js?v=20261120b';
-import { renderDashboard } from './dashboard.js?v=20261120b';
-import { praiseCards, reloadPraiseCards } from './cards.js?v=20261120b';
+} from './firebase.js?v=20261123a';
+import { closeModal, openModal, showToast } from './core.js?v=20261123a';
+import { checkAndGrantRankUp } from './level.js?v=20261123a';
+import { reloadStudents } from './realtime.js?v=20261123a';
+import { renderDashboard } from './dashboard.js?v=20261123a';
+import { praiseCards, reloadPraiseCards } from './cards.js?v=20261123a';
 
 // 초기 config 설정 확인
 

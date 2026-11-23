@@ -6,9 +6,9 @@
 //  2) 첫 공격 때 "사용함(used)" 표시 — 그 뒤로는 나가도 기회가 돌아오지 않아요
 //  3) 공격 전에 나가면(새로고침 포함) 기회를 돌려줘요(release) — 아무것도 얻은 게 없으니까요
 //  4) 보상은 이번 도전 번호가 맞고 아직 안 받았을 때만 한 번 (트랜잭션)
-import { state } from './state.js?v=20261120b';
-import { auth, db, deleteField, doc, runTransaction } from './firebase.js?v=20261120b';
-import { getTodayStr } from './attendance.js?v=20261120b';
+import { state } from './state.js?v=20261123a';
+import { auth, db, deleteField, doc, runTransaction } from './firebase.js?v=20261123a';
+import { getTodayStr } from './attendance.js?v=20261123a';
 
 // 선생님의 "학생 뷰": 학생 데이터가 없는 연습 모드 — 기회·보상·보스 체력 등 실제 데이터를 쓰지 않아요
 export const isPreview = () => auth.currentUser?.email === 'teacher@ourclass.kr';

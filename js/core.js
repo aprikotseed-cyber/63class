@@ -1,6 +1,6 @@
 // core.js — 전역 상태·상수, 설정 캐시, 공통 유틸(토스트·모달)
-import { state } from './state.js?v=20261120b';
-import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261120b';
+import { state } from './state.js?v=20261123a';
+import { collection, db, doc, getDoc, getDocs, query, where } from './firebase.js?v=20261123a';
 
 // ===== 전역 상태 =====
 // (여러 파일이 함께 쓰는 상태는 state.js 에 있어요)
@@ -48,6 +48,15 @@ export async function getMyExchanges() {
   const map = new Map(window._myExchangesFull.list.map(e => [e.id, e]));
   state.exchanges.filter(e => e.studentId === uid && e.status === 'pending').forEach(e => map.set(e.id, e));
   return [...map.values()];
+}
+
+// 내가 방금 바꾼 교환 신청을 저장해 둔 목록에도 바로 반영 (사용·환불 직후 화면이 그대로 남지 않게, 추가 읽기 없음)
+//  patch 가 null 이면 목록에서 지워요(환불).
+export function patchMyExchange(id, patch) {
+  const full = window._myExchangesFull;
+  if (!full) return;
+  if (patch === null) full.list = full.list.filter(e => e.id !== id);
+  else full.list = full.list.map(e => (e.id === id ? { ...e, ...patch } : e));
 }
 
 // ===== 유틸 =====

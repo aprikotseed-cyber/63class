@@ -1,14 +1,14 @@
 // students.js — 학생 목록·포인트/능력치 수정·일괄 추가
-import { state } from './state.js?v=20261120b';
+import { state } from './state.js?v=20261123a';
 import {
   addDoc, auth, collection, createUserWithEmailAndPassword, db, doc, getDocFromServer, increment,
   serverTimestamp, setDoc, updateDoc
-} from './firebase.js?v=20261120b';
-import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261120b';
-import { formatLoginTime } from './level.js?v=20261120b';
-import { helperCreateStudent, helperSignOut, savePwHint } from './accounts.js?v=20261120b';
-import { reloadStudents } from './realtime.js?v=20261120b';
-import { renderDashboard } from './dashboard.js?v=20261120b';
+} from './firebase.js?v=20261123a';
+import { RANK_NAMES, closeModal, getRankIdx, openModal, showToast } from './core.js?v=20261123a';
+import { formatLoginTime } from './level.js?v=20261123a';
+import { helperCreateStudent, helperSignOut, savePwHint } from './accounts.js?v=20261123a';
+import { reloadStudents } from './realtime.js?v=20261123a';
+import { renderDashboard } from './dashboard.js?v=20261123a';
 
 // ===== 학생 목록 =====
 export function renderStudentList() {
